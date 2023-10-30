@@ -117,10 +117,10 @@ def register_new_user(usermodel: UserRegisterModel, db: sqlite3.Connection = Dep
 
 # Operation/Resource 14
 @app.post("/login/", description="User Login")
-def login(logindata: UserLoginModel, db: sqlite3.Connection = Depends(get_db), status_code=status.HTTP_200_OK):
+def login(logindata: UserLoginModel, db: sqlite3.Connection = Depends(get_db)):
     try:
         cursor = db.cursor()
-        cursor.execute("SELECT id, hashed_password FROM users WHERE username=? LIMIT 1", [logindata.username])
+        cursor.execute("SELECT id, hashed_password FROM user WHERE username=? LIMIT 1", [logindata.username])
         result = cursor.fetchone()
 
         if not result:
@@ -139,7 +139,8 @@ def login(logindata: UserLoginModel, db: sqlite3.Connection = Depends(get_db), s
 
     except Exception as e:
         #logger.exception("An error occurred during password verification")    
-        raise HTTPException(status_code=e.status_code, detail=str(e.detail)) 
+        #raise HTTPException(status_code=e.status_code, detail=str(e.detail)) 
+        raise HTTPException(status_code=500, detail="User login failed")
     
     
 
