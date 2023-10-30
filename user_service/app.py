@@ -27,14 +27,14 @@ class Settings():
     #logging_config: str #= "./etc/logging.ini"
 
 class UserRegisterModel(BaseModel):
-    UserID: int
-    UserName: str
-    PW: str
-    Roles: list[int]
+    id: int
+    username: str
+    password: str
+    roles: list[int]
 
 class UserLoginModel(BaseModel):
-    UserName: str
-    PW: str    
+    username: str
+    password: str    
 
 settings = Settings()
 app = FastAPI()    
@@ -101,19 +101,18 @@ def generate_claims(username, user_id, roles):
 def register_new_user(usermodel: UserRegisterModel, db: sqlite3.Connection = Depends(get_db)):
     try:
         # Generate a random salt for each user 
-        hashed_password = hash_password(usermodel.PW)
+        hashed_password = hash_password(usermodel.password)
         cursor = db.cursor()
-        cursor.execute("INSERT INTO users(UserID, UserName, PW) VALUES (?, ?, ?)",
-                       (usermodel.UserID, usermodel.UserName, hashed_password))
+        cursor.execute("INSERT INTO user(id, username, hashed_password) VALUES (?, ?, ?)",
+                       (usermodel.id, usermodel.username, hashed_password))
         data = []
-        for i in range(len(usermodel.Roles)):
-            data.append((usermodel.UserID, usermodel.Roles[i]))
-        cursor.executemany("INSERT INTO userRole(UserID, RoleID) VALUES (?, ?)", data)
+        for i in range(len(usermodel.roles)):
+            data.append((usermodel.id, usermodel.roles[i]))
+        cursor.executemany("INSERT INTO user_role(user_id, role_id) VALUES (?, ?)", data)
         db.commit()
         return {"message": "User registration successful"}
     except Exception as e:
-        logger.exception("An error occurred during user registration")
-        db.rollback()
+        #logger.exception("An error occurred during user registration")
         raise HTTPException(status_code=500, detail="User registration failed")
 
 # Operation/Resource 14
@@ -121,25 +120,25 @@ def register_new_user(usermodel: UserRegisterModel, db: sqlite3.Connection = Dep
 def login(logindata: UserLoginModel, db: sqlite3.Connection = Depends(get_db), status_code=status.HTTP_200_OK):
     try:
         cursor = db.cursor()
-        cursor.execute("SELECT UserID, PW FROM users WHERE UserName=? LIMIT 1", [logindata.UserName])
+        cursor.execute("SELECT id, hashed_password FROM users WHERE username=? LIMIT 1", [logindata.username])
         result = cursor.fetchone()
 
         if not result:
             raise HTTPException(status_code=401, detail="wrong username & password combination") 
 
-        if not verify_password(logindata.PW, result["PW"]):
+        if not verify_password(logindata.password, result["hashed_password"]):
             raise HTTPException(status_code=404, detail="Password mismatch")
         else:
-            cursor.execute('''SELECT roles.RoleName 
-                              FROM roles INNER JOIN userRole ON roles.RoleID = userRole.RoleID
-                              WHERE userRole.UserID = ? ''', [result["UserID"]])
+            cursor.execute('''SELECT roles.role_name
+                              FROM roles INNER JOIN user_role ON roles.id = user_role.role_id
+                              WHERE user_role.user_id = ? ''', [result["id"]])
             rows = cursor.fetchall()       
             list_of_rolenames = [row[0] for row in rows]
-            return generate_claims(logindata.UserName, result["UserID"], list_of_rolenames)
+            return generate_claims(logindata.username, result["id"], list_of_rolenames)
             
 
     except Exception as e:
-        logger.exception("An error occurred during password verification")    
+        #logger.exception("An error occurred during password verification")    
         raise HTTPException(status_code=e.status_code, detail=str(e.detail)) 
     
     
@@ -150,5 +149,5 @@ def check_user_password(logindata: UserLoginModel, db: sqlite3.Connection = Depe
 
 @app.get('/users/', description = 'View all users')
 def list_users(db:sqlite3.Connection = Depends(get_db)):
-    users = db.execute("SELECT * FROM users")
+    users = db.execute("SELECT * FROM user")
     return {"users":users.fetchall()}
