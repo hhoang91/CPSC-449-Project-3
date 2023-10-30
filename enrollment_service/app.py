@@ -1,17 +1,21 @@
+from typing import Annotated
 import sqlite3
 import contextlib
-from fastapi import  FastAPI, Depends, Response, HTTPException, status
+from fastapi import FastAPI, Depends, Response, HTTPException, Header, Body, status
 from .enrollment_helper import enroll_students_from_waitlist, is_auto_enroll_enabled, get_opening_sections
 from .models import Settings, Course, SectionCreate, SectionPatch, Student, Enrollment, Instructor
 
 settings = Settings()
 app = FastAPI()
 
+
 def get_db():
     with contextlib.closing(sqlite3.connect(settings.database)) as db:
         db.row_factory = sqlite3.Row
         db.execute("PRAGMA foreign_keys=ON")
         yield db
+
+############### ENDPOINTS FOR REGISTRAS ################
 
 @app.post("/courses/", status_code=status.HTTP_201_CREATED)
 def create_course(
@@ -64,7 +68,6 @@ def create_section(
 
     Parameters:
     - `section` (Section): The JSON object representing the section with the following properties:
-        - `id` (int): The section ID.
         - `dept_code` (str): Department code.
         - `course_num` (int): Course number.
         - `section_no` (int): Section number.
@@ -87,10 +90,10 @@ def create_section(
     try:
         cur = db.execute(
             """
-            INSERT INTO section(id, dept_code, course_num, section_no, 
+            INSERT INTO section(dept_code, course_num, section_no, 
                     semester, year, instructor_id, room_num, room_capacity, 
                     course_start_date, enrollment_start, enrollment_end)
-            VALUES(:id, :dept_code, :course_num, :section_no,
+            VALUES(:dept_code, :course_num, :section_no,
                     :semester, :year, :instructor_id, :room_num, :room_capacity, 
                     :course_start_date, :enrollment_start, :enrollment_end)
             """,
@@ -132,7 +135,7 @@ def delete_section(
 
         if curr.rowcount == 0:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Record not Found"
+                status_code=status.HTTP_404_NOT_FOUND, detail="Record Not Found"
             )
         db.commit()
     except sqlite3.IntegrityError as e:
@@ -196,7 +199,7 @@ def update_section(
         # Raise exeption if Record not Found
         if curr.rowcount == 0:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Record not Found"
+                status_code=status.HTTP_404_NOT_FOUND, detail="Record Not Found"
             )
         db.commit()
     except sqlite3.Error as e:
@@ -205,3 +208,60 @@ def update_section(
             detail={"type": type(e).__name__, "msg": str(e)},
         )
     return {"message": "Section updated successfully"}
+
+############### ENDPOINTS FOR STUDENTS ################
+
+@app.post("/enroll/")
+def enroll(section_id: Annotated[int, Body(embed=True)],
+           student_id: int = Header(
+               alias="x-cwid", description="A unique ID number for students, instructors, and registrars"),
+           db: sqlite3.Connection = Depends(get_db)):
+    """
+    Student enrolls in a section
+
+    Parameters:
+    - section_id (int, in the request body): The unique identifier of the section where students will be enrolled.
+    - student_id (int, in the request header): The unique identifier of the student who is enrolling.
+
+    Returns:
+    - HTTP_200_OK on success
+
+    Raises:
+    - HTTPException (400): If there are no available seats or not available at the moment.
+    - HTTPException (404): If the specified section or student does not exist.
+    - HTTPException (409): If a conflict occurs (e.g., The student has already enrolled into the class).
+    - HTTPException (500): If there is an internal server error.
+    """
+
+    try:
+        section = db.execute("""
+            SELECT course_start_date, enrollment_start, enrollment_end, datetime('now') AS datetime_now, 
+                    (room_capacity - COUNT(enrollment.section_id)) AS available_seats
+            FROM section LEFT JOIN enrollment ON section.id = enrollment.section_id 
+            WHERE section.id = ?;
+            """, [section_id]).fetchone()
+
+        if not section:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Section Not Found")
+
+        if section["available_seats"] <= 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="No Open Seats")
+
+        if not (section["enrollment_start"] <= section["datetime_now"] <= section["enrollment_end"]):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Not Available At The Moment")
+
+        db.execute("""
+            INSERT INTO enrollment(section_id, student_id, enrollment_date) 
+            VALUES(?, ?, datetime('now'))
+            """, [section_id, student_id]
+        )
+    except sqlite3.IntegrityError as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
+                            detail="The student has already enrolled into the class")
+    except HTTPException as e:
+        raise HTTPException(status_code=e.status_code, detail=str(e.detail))
+
+    return {"detail": "success"}
