@@ -10,7 +10,6 @@ app = FastAPI()
 
 WAITLIST_CAPACITY = 15
 
-
 def get_db():
     with contextlib.closing(sqlite3.connect(settings.database)) as db:
         db.row_factory = sqlite3.Row
@@ -18,7 +17,6 @@ def get_db():
         yield db
 
 ############### ENDPOINTS FOR REGISTRAS ################
-
 
 @app.put("/auto-enrollment/")
 def set_auto_enrollment(enabled: Annotated[bool, Body(embed=True)], db: sqlite3.Connection = Depends(get_db)):
@@ -38,7 +36,6 @@ def set_auto_enrollment(enabled: Annotated[bool, Body(embed=True)], db: sqlite3.
         )
 
     return {"detail ": f"Auto enrollment: {enabled}"}
-
 
 @app.post("/courses/", status_code=status.HTTP_201_CREATED)
 def create_course(
@@ -73,7 +70,6 @@ def create_course(
             detail={"type": type(e).__name__, "msg": str(e)},
         )
     return record
-
 
 @app.post("/sections/", status_code=status.HTTP_201_CREATED)
 def create_section(
@@ -122,7 +118,6 @@ def create_section(
     response.headers["Location"] = f"/sections/{cur.lastrowid}"
     return {"detail": "Success", "inserted_id": cur.lastrowid}
 
-
 @app.delete("/sections/{id}", status_code=status.HTTP_200_OK)
 def delete_section(
     id: int, response: Response, db: sqlite3.Connection = Depends(get_db)
@@ -156,7 +151,6 @@ def delete_section(
         )
 
     return {"detail": "Item deleted successfully"}
-
 
 @app.patch("/sections/{id}", status_code=status.HTTP_200_OK)
 def update_section(
@@ -220,7 +214,6 @@ def update_section(
 
 ############### ENDPOINTS FOR STUDENTS ################
 
-
 @app.get("/classes/available/")
 def get_available_classes(db: sqlite3.Connection = Depends(get_db)):
     """
@@ -253,7 +246,6 @@ def get_available_classes(db: sqlite3.Connection = Depends(get_db)):
         )
     finally:
         return {"classes": classes.fetchall()}
-
 
 @app.post("/enroll/")
 def enroll(section_id: Annotated[int, Body(embed=True)],
@@ -341,7 +333,6 @@ def enroll(section_id: Annotated[int, Body(embed=True)],
 
     return {"detail": "success"}
 
-
 @app.delete("/enrollment/{section_id}", status_code=status.HTTP_200_OK)
 def drop_class(
     section_id: int,
@@ -349,6 +340,19 @@ def drop_class(
         alias="x-cwid", description="A unique ID for students, instructors, and registrars"),
     db: sqlite3.Connection = Depends(get_db)
 ):
+    """
+    Handles a DELETE request to drop a student (himself/herself) from a specific class section.
+
+    Parameters:
+    - section_id (int): The ID of the section from which the student wants to drop.
+    - student_id (int, in the header): A unique ID for students, instructors, and registrars.
+
+    Returns:
+    - dict: A dictionary with the detail message indicating the success of the operation.
+
+    Raises:
+    - HTTPException (409): If a conflict occurs
+    """
     try:
         curr = db.execute(
             "DELETE FROM enrollment WHERE section_id=? AND student_id=?", [section_id, student_id])
@@ -366,6 +370,11 @@ def drop_class(
         )
 
         db.commit()
+
+        # Trigger auto enrollment
+        if is_auto_enroll_enabled(db):        
+            enroll_students_from_waitlist(db, [section_id])
+
     except sqlite3.IntegrityError as e:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -406,8 +415,6 @@ def get_current_waitlist_position(
             detail={"type": type(e).__name__, "msg": str(e)},
         )
         
-
-
 ############### ENDPOINTS FOR INSTRUCTORS ################
 
 @app.get("/classes/{section_id}/students")
@@ -476,6 +483,20 @@ def drop_class(
         alias="x-cwid", description="A unique ID for students, instructors, and registrars"),
     db: sqlite3.Connection = Depends(get_db)
 ):
+    """
+    Handles a DELETE request to administratively drop a student from a specific class section.
+
+    Parameters:
+    - section_id (int): The ID of the section from which the student is being administratively dropped.
+    - student_id (int): The ID of the student being administratively dropped.
+    - instructor_id (int, In the header): A unique ID for students, instructors, and registrars.
+
+    Returns:
+    - dict: A dictionary with the detail message indicating the success of the administrative drop.
+
+    Raises:
+    - HTTPException (409): If there is a conflict in the delete operation.
+    """
     try:
         curr = db.execute(
             """
@@ -499,6 +520,11 @@ def drop_class(
             """, [section_id, student_id]
         )
         db.commit()
+
+        # Trigger auto enrollment
+        if is_auto_enroll_enabled(db):        
+            enroll_students_from_waitlist(db, [section_id])
+
     except sqlite3.IntegrityError as e:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
