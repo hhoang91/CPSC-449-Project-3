@@ -9,6 +9,13 @@ run `sh ./bin/install.sh`.
 - run `sh ./bin/create-user-db.sh` to create user database.
 - run `sh ./bin/create-enrollment-db.sh` to create enrollment service database.
 
+## Database ER Diagram
+#### User Service
+<img src="https://github.com/NLTN/Assets/blob/main/StudentEnrollment/UserERDiagram.png?raw=true">
+
+#### Enrollment Service
+<img src="https://github.com/NLTN/Assets/blob/main/StudentEnrollment/EnrollmentERDiagram.png?raw=true">
+
 ## API Gateway endpoints
 
 #### For registras
