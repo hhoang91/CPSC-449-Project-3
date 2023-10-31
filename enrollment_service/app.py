@@ -17,6 +17,7 @@ def get_db():
 
 ############### ENDPOINTS FOR REGISTRAS ################
 
+
 @app.put("/auto-enrollment/")
 def set_auto_enrollment(enabled: Annotated[bool, Body(embed=True)], db: sqlite3.Connection = Depends(get_db)):
     try:
@@ -35,6 +36,7 @@ def set_auto_enrollment(enabled: Annotated[bool, Body(embed=True)], db: sqlite3.
         )
 
     return {"detail ": f"Auto enrollment: {enabled}"}
+
 
 @app.post("/courses/", status_code=status.HTTP_201_CREATED)
 def create_course(
@@ -117,6 +119,7 @@ def create_section(
         )
     response.headers["Location"] = f"/sections/{cur.lastrowid}"
     return {"detail": "Success", "inserted_id": cur.lastrowid}
+
 
 @app.delete("/sections/{id}", status_code=status.HTTP_200_OK)
 def delete_section(
@@ -215,10 +218,13 @@ def update_section(
 
 ############### ENDPOINTS FOR STUDENTS ################
 
+
 @app.post("/enroll/")
 def enroll(section_id: Annotated[int, Body(embed=True)],
            student_id: int = Header(
                alias="x-cwid", description="A unique ID number for students, instructors, and registrars"),
+           first_name: str = Header(alias="x-first-name"),
+           last_name: str = Header(alias="x-last-name"),
            db: sqlite3.Connection = Depends(get_db)):
     """
     Student enrolls in a section
@@ -254,6 +260,13 @@ def enroll(section_id: Annotated[int, Body(embed=True)],
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, detail="Not Available At The Moment")
 
+        # Insert student if not exists
+        db.execute(
+            """
+            INSERT OR IGNORE INTO student (id, first_name, last_name)
+            VALUES (?, ?, ?);
+            """, [student_id, first_name, last_name])
+
         if section["available_seats"] <= 0:
             # ----- INSERT INTO WAITLIST TABLE -----
             result = db.execute(
@@ -282,6 +295,7 @@ def enroll(section_id: Annotated[int, Body(embed=True)],
                 """, [section_id, student_id]
             )
 
+        db.commit()
     except sqlite3.IntegrityError as e:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail="The student has already enrolled into the class")
