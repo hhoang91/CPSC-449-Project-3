@@ -25,4 +25,9 @@ CREATE TABLE user_role (
     FOREIGN KEY (role_id) REFERENCES roles(id)
 );
 
+INSERT INTO roles (id, role_name) VALUES 
+  (1, 'Student'),
+  (2, 'Instructor'),
+  (3, 'Registra');
+  
 COMMIT;
