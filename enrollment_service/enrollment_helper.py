@@ -30,10 +30,10 @@ def get_opening_sections(db: sqlite3.Connection):
     cursor = db.execute(
         """
         SELECT id 
-        FROM course_section 
+        FROM section 
         WHERE DATE('now') <= date(course_start_date, '+14 days') AND
             room_capacity > (SELECT COUNT(student_id)
-                            FROM enrollments
+                            FROM enrollment
                             WHERE section_id = id
                             )
         """)
@@ -58,16 +58,16 @@ def enroll_students_from_waitlist(db: sqlite3.Connection, section_id_list: list[
         for e in section_id_list:
             cursor = db.execute(
             """
-            INSERT INTO enrollments (section_id, student_id, enrollment_date)
+            INSERT INTO enrollment (section_id, student_id, enrollment_date)
                 SELECT section_id, student_id, datetime('now')
                 FROM waitlist
                 WHERE section_id=$0
                 ORDER BY waitlist_date ASC
                 LIMIT (
                         (SELECT room_capacity 
-                        FROM course_section
+                        FROM section
                         WHERE id=$0) - (SELECT COUNT(student_id)
-                                        FROM enrollments
+                                        FROM enrollment
                                         WHERE section_id=$0
                                         )
                     );
