@@ -357,6 +357,14 @@ def drop_class(
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Record Not Found"
             )
+        
+        db.execute(
+            """
+            INSERT INTO droplist (section_id, student_id, drop_date, administrative) 
+            VALUES (?, ?, datetime('now'), 0);
+            """, [section_id, student_id]
+        )
+
         db.commit()
     except sqlite3.IntegrityError as e:
         raise HTTPException(
@@ -365,6 +373,40 @@ def drop_class(
         )
 
     return {"detail": "Item deleted successfully"}
+
+@app.get("/sections/{section_id}/waitlistposition/")
+def get_current_waitlist_position(
+    section_id:int,
+    student_id: int = Header(
+        alias="x-cwid", description="A unique ID for students, instructors, and registrars"),
+    db: sqlite3.Connection = Depends(get_db)):
+    """
+    Retreive all available classes.
+
+    Returns:
+    - dict: A dictionary containing the details of the classes
+    """
+    try:
+        result = db.execute(
+            """
+            SELECT COUNT(student_id)
+            FROM waitlist
+            WHERE section_id=? AND 
+                waitlist_date <= (SELECT waitlist_date 
+                                    FROM waitlist
+                                    WHERE section_id=? AND 
+                                            student_id=?)
+            ;
+            """, [section_id, section_id, student_id]
+        )
+        return {"position": result.fetchone()[0]}
+    except sqlite3.IntegrityError as e:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail={"type": type(e).__name__, "msg": str(e)},
+        )
+        
+
 
 ############### ENDPOINTS FOR INSTRUCTORS ################
 
@@ -449,6 +491,13 @@ def drop_class(
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Record Not Found"
             )
+        
+        db.execute(
+            """
+            INSERT INTO droplist (section_id, student_id, drop_date, administrative) 
+            VALUES (?, ?, datetime('now'), 1);
+            """, [section_id, student_id]
+        )
         db.commit()
     except sqlite3.IntegrityError as e:
         raise HTTPException(
