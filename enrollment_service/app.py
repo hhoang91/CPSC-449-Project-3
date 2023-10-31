@@ -310,7 +310,7 @@ def enroll(section_id: Annotated[int, Body(embed=True)],
                 SELECT COUNT(student_id) 
                 FROM waitlist 
                 WHERE section_id = ?
-                """, section_id).fetchone()
+                """, [section_id]).fetchone()
 
             if int(result[0]) >= WAITLIST_CAPACITY:
                 raise HTTPException(
