@@ -414,11 +414,48 @@ def get_current_waitlist_position(
             status_code=status.HTTP_409_CONFLICT,
             detail={"type": type(e).__name__, "msg": str(e)},
         )
-        
+
+@app.delete("/classes/{class_id}/waitlist/", status_code=status.HTTP_200_OK)
+def drop_waitlist(
+    class_id: int,
+    student_id: int = Header(
+        alias="x-cwid", description="A unique ID for students, instructors, and registrars"),
+    db: sqlite3.Connection = Depends(get_db)
+):
+    """
+    Students remove themselves from waitlist
+
+    Parameters:
+    - class_id (int): The ID of the class from which the student wants to drop.
+    - student_id (int, in the header): A unique ID for students, instructors, and registrars.
+
+    Returns:
+    - dict: A dictionary with the detail message indicating the success of the operation.
+
+    Raises:
+    - HTTPException (409): If a conflict occurs
+    """
+    try:
+        curr = db.execute(
+            "DELETE FROM waitlist WHERE class_id=? AND student_id=?", [class_id, student_id])
+
+        if curr.rowcount == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Record Not Found"
+            )
+
+    except sqlite3.IntegrityError as e:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail={"type": type(e).__name__, "msg": str(e)},
+        )
+
+    return {"detail": "Item deleted successfully"}
+
 ############### ENDPOINTS FOR INSTRUCTORS ################
 
 @app.get("/classes/{class_id}/students")
-def get_class(class_id: int,
+def get_droplist(class_id: int,
               instructor_id: int = Header(
                   alias="x-cwid", description="A unique ID for students, instructors, and registrars"),
               db: sqlite3.Connection = Depends(get_db)):
@@ -446,8 +483,42 @@ def get_class(class_id: int,
     finally:
         return {"students": result.fetchall()}
 
-@app.get("/classes/{class_id}/droplist")
-def get_class(class_id: int,
+@app.get("/classes/{class_id}/waitlist/")
+def get_waitlist(
+    class_id:int,
+    instructor_id: int = Header(
+        alias="x-cwid", description="A unique ID for students, instructors, and registrars"),
+    db: sqlite3.Connection = Depends(get_db)):
+    """
+    Retreive current waiting list for the class.
+
+    Parameters:
+    - class_id (int): The ID of the class.
+
+    Returns:
+    - dict: A dictionary containing the details of the classes
+    """
+    try:
+        result = db.execute(
+            """
+            SELECT stu.id, stu.first_name, stu.last_name, w.waitlist_date
+            FROM class c
+                INNER JOIN waitlist w ON c.id = w.class_id
+                INNER JOIN student stu ON w.student_id = stu.id 
+            WHERE c.id=? AND c.instructor_id=?
+            ORDER BY w.waitlist_date ASC
+            """, [class_id, instructor_id]
+        )
+    except sqlite3.IntegrityError as e:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail={"type": type(e).__name__, "msg": str(e)},
+        )
+    finally:
+        return {"students": result.fetchall()}
+
+@app.get("/classes/{class_id}/droplist/")
+def get_droplist(class_id: int,
               instructor_id: int = Header(
                   alias="x-cwid", description="A unique ID for students, instructors, and registrars"),
               db: sqlite3.Connection = Depends(get_db)):
