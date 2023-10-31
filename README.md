@@ -32,12 +32,14 @@ run `sh ./bin/install.sh`.
 | Method | Route                        | Description                               |
 |--------|------------------------------|-------------------------------------------|
 |GET     | /api/classes/available/      | Retreive all available classes.           |
-|POST    | /api/enrollment/             | Student enrolls in a class.              |
+|POST    | /api/enrollment/             | Student enrolls in a class.              	|
 |DELETE  | /api/enrollment/{class_id}   | Students drop themselves from a class.    |
+|DELETE  | /api/waitlist/{class_id}   	| Students remove themselves from a waitlist.|
 
 #### For instructors
 | Method | Route                                | Description                               |
 |--------|--------------------------------------|-------------------------------------------|
 |GET     | /api/classes/{class_id}/students/    | Retreive current enrollment for the classes.  |
 |GET     | /api/classes/{class_id}/droplist/    | Retreive students who have dropped the class  |
+|GET     | /api/classes/{class_id}/waitlist/    | Retreive students in the waitling list        |
 |DELETE  | /api/enrollment/{class_id}/{student_id}/administratively/   | Instructors drop students administratively. |
