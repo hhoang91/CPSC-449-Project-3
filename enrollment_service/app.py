@@ -342,7 +342,7 @@ def enroll(section_id: Annotated[int, Body(embed=True)],
     return {"detail": "success"}
 
 
-@app.delete("/dropclass/{section_id}", status_code=status.HTTP_200_OK)
+@app.delete("/enrollment/{section_id}", status_code=status.HTTP_200_OK)
 def drop_class(
     section_id: int,
     student_id: int = Header(
@@ -368,8 +368,7 @@ def drop_class(
 
 ############### ENDPOINTS FOR INSTRUCTORS ################
 
-
-@app.get("/classes/{section_id}/")
+@app.get("/classes/{section_id}/students")
 def get_class(section_id: int,
               instructor_id: int = Header(
                   alias="x-cwid", description="A unique ID for students, instructors, and registrars"),
@@ -397,3 +396,64 @@ def get_class(section_id: int,
         )
     finally:
         return {"students": result.fetchall()}
+
+@app.get("/classes/{section_id}/droplist")
+def get_class(section_id: int,
+              instructor_id: int = Header(
+                  alias="x-cwid", description="A unique ID for students, instructors, and registrars"),
+              db: sqlite3.Connection = Depends(get_db)):
+    """
+    Retreive students who have dropped the class.
+
+    Returns:
+    - dict: A dictionary containing the details of the classes
+    """
+    try:
+        result = db.execute(
+            """
+            SELECT stu.* 
+            FROM section sec
+                INNER JOIN droplist d ON sec.id = d.section_id
+                INNER JOIN student stu ON d.student_id = stu.id 
+            WHERE sec.id=? AND sec.instructor_id=?
+            """, [section_id, instructor_id]
+        )
+    except sqlite3.IntegrityError as e:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail={"type": type(e).__name__, "msg": str(e)},
+        )
+    finally:
+        return {"students": result.fetchall()}
+
+@app.delete("/enrollment/{section_id}/{student_id}/administratively/", status_code=status.HTTP_200_OK)
+def drop_class(
+    section_id: int,
+    student_id: int,
+    instructor_id: int = Header(
+        alias="x-cwid", description="A unique ID for students, instructors, and registrars"),
+    db: sqlite3.Connection = Depends(get_db)
+):
+    try:
+        curr = db.execute(
+            """
+            DELETE 
+            FROM enrollment
+            WHERE section_id = ? AND student_id=? 
+                AND section_id IN (SELECT id 
+                                    FROM "section" 
+                                    WHERE id=? AND instructor_id=?);
+            """, [section_id, student_id, section_id, instructor_id])
+
+        if curr.rowcount == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Record Not Found"
+            )
+        db.commit()
+    except sqlite3.IntegrityError as e:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail={"type": type(e).__name__, "msg": str(e)},
+        )
+
+    return {"detail": "Item deleted successfully"}
