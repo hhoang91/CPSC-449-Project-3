@@ -42,6 +42,7 @@ class SectionCreate(BaseModel):
     semester: str
     instructor_id: int
     room_num: int
+    room_capacity:int
     course_start_date: str
     enrollment_start: str
     enrollment_end: str
