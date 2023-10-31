@@ -22,7 +22,7 @@ class Course(BaseModel):
     course_no: int
     title: str
 
-class SectionPatch(BaseModel):
+class ClassPatch(BaseModel):
     section_no: Optional[int] = None
     instructor_id: Optional[int] = None
     room_num: Optional[int] = None
@@ -31,7 +31,7 @@ class SectionPatch(BaseModel):
     enrollment_start: Optional[str] = None
     enrollment_end: Optional[str] = None
 
-class SectionCreate(BaseModel):
+class ClassCreate(BaseModel):
     dept_code: str
     course_num: int
     section_no: int

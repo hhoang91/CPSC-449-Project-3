@@ -16,33 +16,33 @@ def is_auto_enroll_enabled(db: sqlite3.Connection):
     result = cursor.fetchone()
     return result[0] == 1
 
-def get_opening_sections(db: sqlite3.Connection):
+def get_opening_classes(db: sqlite3.Connection):
     """
-    Get sections which have available seats
+    Get classes which have available seats
 
     Parameters:
         db (sqlite3.Connection): Database connection.
 
     Returns:
-        list[int]: A list of section_id.
+        list[int]: A list of class_id.
     """
 
     cursor = db.execute(
         """
         SELECT id 
-        FROM section 
+        FROM class 
         WHERE DATE('now') <= date(course_start_date, '+14 days') AND
             room_capacity > (SELECT COUNT(student_id)
                             FROM enrollment
-                            WHERE section_id = id
+                            WHERE class_id = id
                             )
         """)
     rows = cursor.fetchall()
     return [row[0] for row in rows]
 
-def enroll_students_from_waitlist(db: sqlite3.Connection, section_id_list: list[int]):
+def enroll_students_from_waitlist(db: sqlite3.Connection, class_id_list: list[int]):
     """
-    This function checks the waitlist for available spots in the sections
+    This function checks the waitlist for available spots in the classes
     and enrolls students accordingly.
 
     Parameters:
@@ -55,20 +55,20 @@ def enroll_students_from_waitlist(db: sqlite3.Connection, section_id_list: list[
     enrollment_count = 0
 
     try:
-        for e in section_id_list:
+        for e in class_id_list:
             cursor = db.execute(
             """
-            INSERT INTO enrollment (section_id, student_id, enrollment_date)
-                SELECT section_id, student_id, datetime('now')
+            INSERT INTO enrollment (class_id, student_id, enrollment_date)
+                SELECT class_id, student_id, datetime('now')
                 FROM waitlist
-                WHERE section_id=$0
+                WHERE class_id=$0
                 ORDER BY waitlist_date ASC
                 LIMIT (
                         (SELECT room_capacity 
-                        FROM section
+                        FROM class
                         WHERE id=$0) - (SELECT COUNT(student_id)
                                         FROM enrollment
-                                        WHERE section_id=$0
+                                        WHERE class_id=$0
                                         )
                     );
             """, [e])
@@ -92,4 +92,5 @@ def enroll_students_from_waitlist(db: sqlite3.Connection, section_id_list: list[
             status_code=status.HTTP_409_CONFLICT,
             detail={"type": type(e).__name__, "msg": str(e)},
         )
+    
     return enrollment_count
