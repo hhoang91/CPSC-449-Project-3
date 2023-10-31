@@ -8,6 +8,7 @@ from .models import Settings, Course, SectionCreate, SectionPatch, Student, Enro
 settings = Settings()
 app = FastAPI()
 
+WAITLIST_CAPACITY = 15
 
 def get_db():
     with contextlib.closing(sqlite3.connect(settings.database)) as db:
@@ -218,11 +219,43 @@ def update_section(
 
 ############### ENDPOINTS FOR STUDENTS ################
 
+@app.get("/classes/available/")
+def get_available_classes(db: sqlite3.Connection = Depends(get_db)):
+    """
+    Retreive all available classes.
+
+    Returns:
+    - dict: A dictionary containing the details of the classes
+    """
+    try:
+        classes = db.execute(
+            """
+            SELECT s.*
+            FROM "section" as s
+            WHERE datetime('now') BETWEEN s.enrollment_start AND s.enrollment_end 
+                AND (
+                        (s.room_capacity > 
+                            (SELECT COUNT(enrollment.student_id)
+                            FROM enrollment
+                            WHERE section_id=s.id) > 0) 
+                        OR ((SELECT COUNT(waitlist.student_id)
+                            FROM waitlist
+                            WHERE section_id=s.id) < ?)
+                    );
+            """, [WAITLIST_CAPACITY]
+        )
+    except sqlite3.IntegrityError as e:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail={"type": type(e).__name__, "msg": str(e)},
+        )
+    finally:
+        return {"classes": classes.fetchall()}
 
 @app.post("/enroll/")
 def enroll(section_id: Annotated[int, Body(embed=True)],
            student_id: int = Header(
-               alias="x-cwid", description="A unique ID number for students, instructors, and registrars"),
+               alias="x-cwid", description="A unique ID for students, instructors, and registrars"),
            first_name: str = Header(alias="x-first-name"),
            last_name: str = Header(alias="x-last-name"),
            db: sqlite3.Connection = Depends(get_db)):
@@ -276,7 +309,7 @@ def enroll(section_id: Annotated[int, Body(embed=True)],
                 WHERE section_id = ?
                 """, section_id).fetchone()
 
-            if int(result[0]) >= 15:
+            if int(result[0]) >= WAITLIST_CAPACITY:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST, detail="No open seats and the waitlist is also full")
             else:
@@ -304,3 +337,28 @@ def enroll(section_id: Annotated[int, Body(embed=True)],
         raise HTTPException(status_code=e.status_code, detail=str(e.detail))
 
     return {"detail": "success"}
+
+
+@app.delete("/dropclass/{section_id}", status_code=status.HTTP_200_OK)
+def drop_class(
+    section_id: int,
+    student_id: int = Header(
+        alias="x-cwid", description="A unique ID for students, instructors, and registrars"),
+    db: sqlite3.Connection = Depends(get_db)
+):
+    try:
+        curr = db.execute(
+            "DELETE FROM enrollment WHERE section_id=? AND student_id=?", [section_id, student_id])
+
+        if curr.rowcount == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Record Not Found"
+            )
+        db.commit()
+    except sqlite3.IntegrityError as e:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail={"type": type(e).__name__, "msg": str(e)},
+        )
+
+    return {"detail": "Item deleted successfully"}
