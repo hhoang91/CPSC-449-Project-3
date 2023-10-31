@@ -2,8 +2,8 @@ from typing import Annotated
 import sqlite3
 import contextlib
 from fastapi import FastAPI, Depends, Response, HTTPException, Header, Body, status
-from .enrollment_helper import enroll_students_from_waitlist, is_auto_enroll_enabled, get_opening_sections
-from .models import Settings, Course, SectionCreate, SectionPatch, Student, Enrollment, Instructor
+from .enrollment_helper import enroll_students_from_waitlist, is_auto_enroll_enabled, get_opening_classes
+from .models import Settings, Course, ClassCreate, ClassPatch, Student, Enrollment, Instructor
 
 settings = Settings()
 app = FastAPI()
@@ -26,8 +26,8 @@ def set_auto_enrollment(enabled: Annotated[bool, Body(embed=True)], db: sqlite3.
         db.commit()
 
         if enabled:
-            opening_sections = get_opening_sections(db)
-            enroll_students_from_waitlist(db, opening_sections)
+            opening_classes = get_opening_classes(db)
+            enroll_students_from_waitlist(db, opening_classes)
 
     except sqlite3.IntegrityError as e:
         raise HTTPException(
@@ -73,13 +73,13 @@ def create_course(
 
 @app.post("/sections/", status_code=status.HTTP_201_CREATED)
 def create_section(
-    section: SectionCreate, response: Response, db: sqlite3.Connection = Depends(get_db)
+    body_data: ClassCreate, response: Response, db: sqlite3.Connection = Depends(get_db)
 ):
     """
-    Creates a new section.
+    Creates a new class.
 
     Parameters:
-    - `section` (Section): The JSON object representing the section with the following properties:
+    - `class` (Class): The JSON object representing the class with the following properties:
         - `dept_code` (str): Department code.
         - `course_num` (int): Course number.
         - `section_no` (int): Section number.
@@ -98,7 +98,7 @@ def create_section(
     Raises:
     - HTTPException (409): If a conflict occurs (e.g., duplicate course).
     """
-    record = dict(section)
+    record = dict(body_data)
     try:
         cur = db.execute(
             """
@@ -115,7 +115,7 @@ def create_section(
             status_code=status.HTTP_409_CONFLICT,
             detail={"type": type(e).__name__, "msg": str(e)},
         )
-    response.headers["Location"] = f"/sections/{cur.lastrowid}"
+    response.headers["Location"] = f"/classes/{cur.lastrowid}"
     return {"detail": "Success", "inserted_id": cur.lastrowid}
 
 @app.delete("/sections/{id}", status_code=status.HTTP_200_OK)
@@ -123,17 +123,17 @@ def delete_section(
     id: int, response: Response, db: sqlite3.Connection = Depends(get_db)
 ):
     """
-    Deletes a specific section.
+    Deletes a specific class.
 
     Parameters:
-    - `id` (int): The ID of the section to delete.
+    - `id` (int): The ID of the class to delete.
 
     Returns:
     - dict: A dictionary indicating the success of the deletion operation.
       Example: {"message": "Item deleted successfully"}
 
     Raises:
-    - HTTPException (404): If the section with the specified ID is not found.
+    - HTTPException (404): If the class with the specified ID is not found.
     - HTTPException (409): If there is a conflict in the delete operation.
     """
     try:
@@ -155,7 +155,7 @@ def delete_section(
 @app.patch("/sections/{id}", status_code=status.HTTP_200_OK)
 def update_section(
     id: int,
-    section: SectionPatch,
+    body_data: ClassPatch,
     response: Response,
     db: sqlite3.Connection = Depends(get_db),
 ):
@@ -163,7 +163,7 @@ def update_section(
     Updates specific details of a section.
 
     Parameters:
-    - `section` (Section): The JSON object representing the section with the following properties:
+    - `class` (ClassPatch): The JSON object representing the class with the following properties:
         - `section_no` (int, optional): Section number.
         - `instructor_id` (int, optional): Instructor ID.
         - `room_num` (int, optional): Room number.
@@ -174,23 +174,23 @@ def update_section(
 
     Returns:
     - dict: A dictionary indicating the success of the update operation.
-      Example: {"message": "Section updated successfully"}
+      Example: {"message": "Item updated successfully"}
 
     Raises:
-    - HTTPException (404): If the section with the specified ID is not found.
-    - HTTPException (409): If there is a conflict in the update operation (e.g., duplicate section details).
+    - HTTPException (404): If the class with the specified ID is not found.
+    - HTTPException (409): If there is a conflict in the update operation (e.g., duplicate class details).
     """
     try:
         # Excluding fields that have not been set
-        section_fields = section.dict(exclude_unset=True)
+        data_fields = body_data.dict(exclude_unset=True)
 
         # Create a list of column-placeholder pairs, separated by commas
         keys = ", ".join(
-            [f"{key} = ?" for index, key in enumerate(section_fields.keys())]
+            [f"{key} = ?" for index, key in enumerate(data_fields.keys())]
         )
 
         # Create a list of values to bind to the placeholders
-        values = list(section_fields.values())  # List of values to be updated
+        values = list(data_fields.values())  # List of values to be updated
         values.append(id)  # WHERE id = ?
 
         # Define a parameterized query with placeholders & values
@@ -210,7 +210,7 @@ def update_section(
             status_code=status.HTTP_409_CONFLICT,
             detail={"type": type(e).__name__, "msg": str(e)},
         )
-    return {"message": "Section updated successfully"}
+    return {"message": "Item updated successfully"}
 
 ############### ENDPOINTS FOR STUDENTS ################
 
@@ -255,7 +255,7 @@ def enroll(section_id: Annotated[int, Body(embed=True)],
            last_name: str = Header(alias="x-last-name"),
            db: sqlite3.Connection = Depends(get_db)):
     """
-    Student enrolls in a section
+    Student enrolls in a class
 
     Parameters:
     - section_id (int, in the request body): The unique identifier of the section where students will be enrolled.
@@ -266,13 +266,13 @@ def enroll(section_id: Annotated[int, Body(embed=True)],
 
     Raises:
     - HTTPException (400): If there are no available seats.
-    - HTTPException (404): If the specified section or student does not exist.
+    - HTTPException (404): If the specified class or student does not exist.
     - HTTPException (409): If a conflict occurs (e.g., The student has already enrolled into the class).
     - HTTPException (500): If there is an internal server error.
     """
 
     try:
-        section = db.execute(
+        class_info = db.execute(
             """
             SELECT course_start_date, enrollment_start, enrollment_end, datetime('now') AS datetime_now, 
                     (room_capacity - COUNT(enrollment.section_id)) AS available_seats
@@ -280,11 +280,11 @@ def enroll(section_id: Annotated[int, Body(embed=True)],
             WHERE section.id = ?;
             """, [section_id]).fetchone()
 
-        if not section:
+        if not class_info:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Section Not Found")
 
-        if not (section["enrollment_start"] <= section["datetime_now"] <= section["enrollment_end"]):
+        if not (class_info["enrollment_start"] <= class_info["datetime_now"] <= class_info["enrollment_end"]):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, detail="Not Available At The Moment")
 
@@ -295,7 +295,7 @@ def enroll(section_id: Annotated[int, Body(embed=True)],
             VALUES (?, ?, ?);
             """, [student_id, first_name, last_name])
 
-        if section["available_seats"] <= 0:
+        if class_info["available_seats"] <= 0:
             # ----- INSERT INTO WAITLIST TABLE -----
             result = db.execute(
                 """
@@ -341,10 +341,10 @@ def drop_class(
     db: sqlite3.Connection = Depends(get_db)
 ):
     """
-    Handles a DELETE request to drop a student (himself/herself) from a specific class section.
+    Handles a DELETE request to drop a student (himself/herself) from a specific class.
 
     Parameters:
-    - section_id (int): The ID of the section from which the student wants to drop.
+    - section_id (int): The ID of the class from which the student wants to drop.
     - student_id (int, in the header): A unique ID for students, instructors, and registrars.
 
     Returns:
@@ -484,10 +484,10 @@ def drop_class(
     db: sqlite3.Connection = Depends(get_db)
 ):
     """
-    Handles a DELETE request to administratively drop a student from a specific class section.
+    Handles a DELETE request to administratively drop a student from a specific class.
 
     Parameters:
-    - section_id (int): The ID of the section from which the student is being administratively dropped.
+    - section_id (int): The ID of the class from which the student is being administratively dropped.
     - student_id (int): The ID of the student being administratively dropped.
     - instructor_id (int, In the header): A unique ID for students, instructors, and registrars.
 

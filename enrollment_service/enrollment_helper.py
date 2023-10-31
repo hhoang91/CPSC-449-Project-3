@@ -16,7 +16,7 @@ def is_auto_enroll_enabled(db: sqlite3.Connection):
     result = cursor.fetchone()
     return result[0] == 1
 
-def get_opening_sections(db: sqlite3.Connection):
+def get_opening_classes(db: sqlite3.Connection):
     """
     Get sections which have available seats
 
