@@ -172,7 +172,33 @@
       }
     },
     {
-      "_comment": "Student 1: Student enrolls in a section",
+      "_comment": "Student 1: Retreive all available classes.",
+      "endpoint": "/api/classes/available/",
+      "method": "GET",
+      "backend": [
+        {
+          "url_pattern": "/classes/available/",
+          "host": ["http://localhost:5100"],
+          "extra_config": {
+            "backend/http": {
+              "return_error_details": "backend_b"
+            }
+          }
+        }
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "RS256",
+          "roles_key": "roles",
+          "roles": ["Student"],
+          "jwk_local_path": "./etc/public_key.json",
+          "disable_jwk_security": true,
+          "operation_debug": true
+        }
+      }
+    },
+    {
+      "_comment": "Student 2: Student enrolls in a section",
       "endpoint": "/api/enroll/",
       "method": "POST",
       "input_headers": ["x-cwid", "x-first-name", "x-last-name"],
@@ -200,6 +226,34 @@
             ["first_name", "x-first-name"],
             ["last_name", "x-last-name"]
           ]
+        }
+      }
+    },
+    {
+      "_comment": "Student 3: Student drop a class",
+      "endpoint": "/api/dropclass/{section_id}/",
+      "method": "DELETE",
+      "input_headers": ["x-cwid"],
+      "backend": [
+        {
+          "url_pattern": "/dropclass/{section_id}/",
+          "host": ["http://localhost:5100"],
+          "extra_config": {
+            "backend/http": {
+              "return_error_details": "backend_b"
+            }
+          }
+        }
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "RS256",
+          "roles_key": "roles",
+          "roles": ["Student"],
+          "jwk_local_path": "./etc/public_key.json",
+          "disable_jwk_security": true,
+          "operation_debug": true,
+          "propagate_claims": [["jti", "x-cwid"]]
         }
       }
     },
