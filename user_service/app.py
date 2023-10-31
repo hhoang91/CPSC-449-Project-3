@@ -30,6 +30,8 @@ class UserRegisterModel(BaseModel):
     id: int
     username: str
     password: str
+    first_name: str
+    last_name: str
     roles: list[int]
 
 class UserLoginModel(BaseModel):
@@ -77,7 +79,7 @@ def expiration_in(minutes):
     return creation, expiration
 
 
-def generate_claims(username, user_id, roles):
+def generate_claims(username, user_id, roles, first_name, last_name):
     _, exp = expiration_in(20)
 
     claims = {
@@ -87,6 +89,8 @@ def generate_claims(username, user_id, roles):
         "jti": str(user_id),
         "roles": roles,
         "exp": int(exp.timestamp()),
+        "first_name": first_name,
+        "last_name": last_name   
     }
     token = {
         "access_token": claims,
@@ -103,11 +107,12 @@ def register_new_user(usermodel: UserRegisterModel, db: sqlite3.Connection = Dep
         # Generate a random salt for each user 
         hashed_password = hash_password(usermodel.password)
         cursor = db.cursor()
-        cursor.execute("INSERT INTO user(id, username, hashed_password) VALUES (?, ?, ?)",
-                       (usermodel.id, usermodel.username, hashed_password))
+        cursor.execute("INSERT INTO user(id, username, hashed_password, first_name, last_name) VALUES (?, ?, ?, ?, ?)",
+                       [usermodel.id, usermodel.username, hashed_password, usermodel.first_name, usermodel.last_name])
         data = []
         for i in range(len(usermodel.roles)):
             data.append((usermodel.id, usermodel.roles[i]))
+        
         cursor.executemany("INSERT INTO user_role(user_id, role_id) VALUES (?, ?)", data)
         db.commit()
         return {"message": "User registration successful"}
@@ -120,7 +125,7 @@ def register_new_user(usermodel: UserRegisterModel, db: sqlite3.Connection = Dep
 def login(logindata: UserLoginModel, db: sqlite3.Connection = Depends(get_db)):
     try:
         cursor = db.cursor()
-        cursor.execute("SELECT id, hashed_password FROM user WHERE username=? LIMIT 1", [logindata.username])
+        cursor.execute("SELECT id, hashed_password, first_name, last_name FROM user WHERE username=? LIMIT 1", [logindata.username])
         result = cursor.fetchone()
 
         if not result:
@@ -134,7 +139,7 @@ def login(logindata: UserLoginModel, db: sqlite3.Connection = Depends(get_db)):
                               WHERE user_role.user_id = ? ''', [result["id"]])
             rows = cursor.fetchall()       
             list_of_rolenames = [row[0] for row in rows]
-            return generate_claims(logindata.username, result["id"], list_of_rolenames)
+            return generate_claims(logindata.username, result["id"], list_of_rolenames, result["first_name"], result["last_name"])
             
 
     except Exception as e:
