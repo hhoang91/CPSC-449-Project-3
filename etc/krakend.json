@@ -3,12 +3,12 @@
   "version": 3,
   "endpoints": [
     {
-      "endpoint": "/api/login",
+      "endpoint": "/api/login/",
       "method": "POST",
       "backend": [
         {
-          "url_pattern": "/login",
-          "host": ["http://localhost:5100"],
+          "url_pattern": "/login/",
+          "host": ["http://localhost:5200"],
           "extra_config": {
             "backend/http": {
               "return_error_details": "backend_b"
@@ -27,12 +27,12 @@
       }
     },
     {
-      "endpoint": "/api/register",
+      "endpoint": "/api/register/",
       "method": "POST",
       "backend": [
         {
-          "url_pattern": "/register",
-          "host": ["http://localhost:5100"],
+          "url_pattern": "/register/",
+          "host": ["http://localhost:5200"],
           "extra_config": {
             "backend/http": {
               "return_error_details": "backend_b"
@@ -47,14 +47,18 @@
       "backend": [
         {
           "url_pattern": "/students/{student_id}/classes",
-          "host": ["http://localhost:5000", "http://localhost:5001", "http://localhost:5002"]
+          "host": [
+            "http://localhost:5000",
+            "http://localhost:5001",
+            "http://localhost:5002"
+          ]
         }
       ],
       "extra_config": {
         "auth/validator": {
           "alg": "RS256",
           "roles_key": "roles",
-          "roles": ["registrar","student","professor"],
+          "roles": ["registrar", "student", "professor"],
           "jwk_local_path": "./etc/public_key.json",
           "disable_jwk_security": true,
           "operation_debug": true
@@ -67,14 +71,18 @@
       "backend": [
         {
           "url_pattern": "/students/{student_id}/enrolled",
-          "host": ["http://localhost:5000", "http://localhost:5001", "http://localhost:5002"]
+          "host": [
+            "http://localhost:5000",
+            "http://localhost:5001",
+            "http://localhost:5002"
+          ]
         }
       ],
       "extra_config": {
         "auth/validator": {
           "alg": "RS256",
           "roles_key": "roles",
-          "roles": ["registrar","student","professor"],
+          "roles": ["registrar", "student", "professor"],
           "jwk_local_path": "./etc/public_key.json",
           "disable_jwk_security": true,
           "operation_debug": true
@@ -87,14 +95,18 @@
       "backend": [
         {
           "url_pattern": "/students/{student_id}/classes/{class_id}/enroll",
-          "host": ["http://localhost:5000", "http://localhost:5001", "http://localhost:5002"]
+          "host": [
+            "http://localhost:5000",
+            "http://localhost:5001",
+            "http://localhost:5002"
+          ]
         }
       ],
       "extra_config": {
         "auth/validator": {
           "alg": "RS256",
           "roles_key": "roles",
-          "roles": ["registrar","student","professor"],
+          "roles": ["registrar", "student", "professor"],
           "jwk_local_path": "./etc/public_key.json",
           "disable_jwk_security": true,
           "operation_debug": true
@@ -108,7 +120,11 @@
       "backend": [
         {
           "url_pattern": "/students/classes/{class_id}",
-          "host": ["http://localhost:5000", "http://localhost:5001", "http://localhost:5002"],
+          "host": [
+            "http://localhost:5000",
+            "http://localhost:5001",
+            "http://localhost:5002"
+          ],
           "extra_config": {
             "backend/http": {
               "return_error_details": "backend_b"
@@ -120,13 +136,11 @@
         "auth/validator": {
           "alg": "RS256",
           "roles_key": "roles",
-          "roles": ["registrar","student","professor"],
+          "roles": ["registrar", "student", "professor"],
           "jwk_local_path": "./etc/public_key.json",
           "disable_jwk_security": true,
           "operation_debug": true,
-          "propagate_claims": [
-            ["jti", "x-cwid"]
-          ]
+          "propagate_claims": [["jti", "x-cwid"]]
         }
       }
     },
@@ -136,14 +150,18 @@
       "backend": [
         {
           "url_pattern": "/waitlist/classes",
-          "host": ["http://localhost:5000", "http://localhost:5001", "http://localhost:5002"]
+          "host": [
+            "http://localhost:5000",
+            "http://localhost:5001",
+            "http://localhost:5002"
+          ]
         }
       ],
       "extra_config": {
         "auth/validator": {
           "alg": "RS256",
           "roles_key": "roles",
-          "roles": ["registrar","student","professor"],
+          "roles": ["registrar", "student", "professor"],
           "jwk_local_path": "./etc/public_key.json",
           "disable_jwk_security": true,
           "operation_debug": true
@@ -156,14 +174,18 @@
       "backend": [
         {
           "url_pattern": "/waitlist/students/{student_id}",
-          "host": ["http://localhost:5000", "http://localhost:5001", "http://localhost:5002"]
+          "host": [
+            "http://localhost:5000",
+            "http://localhost:5001",
+            "http://localhost:5002"
+          ]
         }
       ],
       "extra_config": {
         "auth/validator": {
           "alg": "RS256",
           "roles_key": "roles",
-          "roles":["registrar","student","professor"],
+          "roles": ["registrar", "student", "professor"],
           "jwk_local_path": "./etc/public_key.json",
           "disable_jwk_security": true,
           "operation_debug": true
@@ -176,14 +198,18 @@
       "backend": [
         {
           "url_pattern": "/waitlist/students/{student_id}/classes/{class_id}/drop",
-          "host": ["http://localhost:5000", "http://localhost:5001", "http://localhost:5002"]
+          "host": [
+            "http://localhost:5000",
+            "http://localhost:5001",
+            "http://localhost:5002"
+          ]
         }
       ],
       "extra_config": {
         "auth/validator": {
           "alg": "RS256",
           "roles_key": "roles",
-          "roles": ["registrar","student","professor"],
+          "roles": ["registrar", "student", "professor"],
           "jwk_local_path": "./etc/public_key.json",
           "disable_jwk_security": true,
           "operation_debug": true
@@ -196,14 +222,18 @@
       "backend": [
         {
           "url_pattern": "/waitlist/instructors/{instructor_id}/classes/{class_id}",
-          "host": ["http://localhost:5000", "http://localhost:5001", "http://localhost:5002"]
+          "host": [
+            "http://localhost:5000",
+            "http://localhost:5001",
+            "http://localhost:5002"
+          ]
         }
       ],
       "extra_config": {
         "auth/validator": {
           "alg": "RS256",
           "roles_key": "roles",
-          "roles": ["professor","registrar"],
+          "roles": ["professor", "registrar"],
           "jwk_local_path": "./etc/public_key.json",
           "disable_jwk_security": true,
           "operation_debug": true
@@ -216,14 +246,18 @@
       "backend": [
         {
           "url_pattern": "/instructors/{instructor_id}/classes/{class_id}/enrollment",
-          "host": ["http://localhost:5000", "http://localhost:5001", "http://localhost:5002"]
+          "host": [
+            "http://localhost:5000",
+            "http://localhost:5001",
+            "http://localhost:5002"
+          ]
         }
       ],
       "extra_config": {
         "auth/validator": {
           "alg": "RS256",
           "roles_key": "roles",
-          "roles": ["professor","registrar"],
+          "roles": ["professor", "registrar"],
           "jwk_local_path": "./etc/public_key.json",
           "disable_jwk_security": true,
           "operation_debug": true
@@ -236,14 +270,18 @@
       "backend": [
         {
           "url_pattern": "/instructors/{instructor_id}/classes/{class_id}/drop",
-          "host": ["http://localhost:5000", "http://localhost:5001", "http://localhost:5002"]
+          "host": [
+            "http://localhost:5000",
+            "http://localhost:5001",
+            "http://localhost:5002"
+          ]
         }
       ],
       "extra_config": {
         "auth/validator": {
           "alg": "RS256",
           "roles_key": "roles",
-          "roles": ["professor","registrar"],
+          "roles": ["professor", "registrar"],
           "jwk_local_path": "./etc/public_key.json",
           "disable_jwk_security": true,
           "operation_debug": true
@@ -256,14 +294,18 @@
       "backend": [
         {
           "url_pattern": "/instructors/{instructor_id}/classes/{class_id}/students/{student_id}/drop",
-          "host": ["http://localhost:5000", "http://localhost:5001", "http://localhost:5002"]
+          "host": [
+            "http://localhost:5000",
+            "http://localhost:5001",
+            "http://localhost:5002"
+          ]
         }
       ],
       "extra_config": {
         "auth/validator": {
           "alg": "RS256",
           "roles_key": "roles",
-          "roles": ["professor","registrar"],
+          "roles": ["professor", "registrar"],
           "jwk_local_path": "./etc/public_key.json",
           "disable_jwk_security": true,
           "operation_debug": true
@@ -276,14 +318,18 @@
       "backend": [
         {
           "url_pattern": "/registrar/classes/",
-          "host": ["http://localhost:5000", "http://localhost:5001", "http://localhost:5002"]
+          "host": [
+            "http://localhost:5000",
+            "http://localhost:5001",
+            "http://localhost:5002"
+          ]
         }
       ],
       "extra_config": {
         "auth/validator": {
           "alg": "RS256",
           "roles_key": "roles",
-          "roles": ["professor","registrar"],
+          "roles": ["professor", "registrar"],
           "jwk_local_path": "./etc/public_key.json",
           "disable_jwk_security": true,
           "operation_debug": true
@@ -296,7 +342,11 @@
       "backend": [
         {
           "url_pattern": "/registrar/classes/{class_id}",
-          "host": ["http://localhost:5000", "http://localhost:5001", "http://localhost:5002"]
+          "host": [
+            "http://localhost:5000",
+            "http://localhost:5001",
+            "http://localhost:5002"
+          ]
         }
       ],
       "extra_config": {
@@ -316,7 +366,11 @@
       "backend": [
         {
           "url_pattern": "/registrar/classes/{class_id}/instructors/{instructor_id}",
-          "host": ["http://localhost:5000", "http://localhost:5001", "http://localhost:5002"]
+          "host": [
+            "http://localhost:5000",
+            "http://localhost:5001",
+            "http://localhost:5002"
+          ]
         }
       ],
       "extra_config": {
@@ -336,7 +390,11 @@
       "backend": [
         {
           "url_pattern": "/registrar/automatic-enrollment/freeze",
-          "host": ["http://localhost:5000", "http://localhost:5001", "http://localhost:5002"]
+          "host": [
+            "http://localhost:5000",
+            "http://localhost:5001",
+            "http://localhost:5002"
+          ]
         }
       ],
       "extra_config": {
