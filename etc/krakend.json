@@ -58,7 +58,7 @@
         "auth/validator": {
           "alg": "RS256",
           "roles_key": "roles",
-          "roles": ["registrar", "student", "professor"],
+          "roles": ["registrar", "student", "instructor"],
           "jwk_local_path": "./etc/public_key.json",
           "disable_jwk_security": true,
           "operation_debug": true
@@ -82,7 +82,7 @@
         "auth/validator": {
           "alg": "RS256",
           "roles_key": "roles",
-          "roles": ["registrar", "student", "professor"],
+          "roles": ["registrar", "student", "instructor"],
           "jwk_local_path": "./etc/public_key.json",
           "disable_jwk_security": true,
           "operation_debug": true
@@ -106,7 +106,7 @@
         "auth/validator": {
           "alg": "RS256",
           "roles_key": "roles",
-          "roles": ["registrar", "student", "professor"],
+          "roles": ["registrar", "student", "instructor"],
           "jwk_local_path": "./etc/public_key.json",
           "disable_jwk_security": true,
           "operation_debug": true
@@ -136,7 +136,7 @@
         "auth/validator": {
           "alg": "RS256",
           "roles_key": "roles",
-          "roles": ["registrar", "student", "professor"],
+          "roles": ["registrar", "student", "instructor"],
           "jwk_local_path": "./etc/public_key.json",
           "disable_jwk_security": true,
           "operation_debug": true,
@@ -161,7 +161,7 @@
         "auth/validator": {
           "alg": "RS256",
           "roles_key": "roles",
-          "roles": ["registrar", "student", "professor"],
+          "roles": ["registrar", "student", "instructor"],
           "jwk_local_path": "./etc/public_key.json",
           "disable_jwk_security": true,
           "operation_debug": true
@@ -185,7 +185,7 @@
         "auth/validator": {
           "alg": "RS256",
           "roles_key": "roles",
-          "roles": ["registrar", "student", "professor"],
+          "roles": ["registrar", "student", "instructor"],
           "jwk_local_path": "./etc/public_key.json",
           "disable_jwk_security": true,
           "operation_debug": true
@@ -209,7 +209,7 @@
         "auth/validator": {
           "alg": "RS256",
           "roles_key": "roles",
-          "roles": ["registrar", "student", "professor"],
+          "roles": ["registrar", "student", "instructor"],
           "jwk_local_path": "./etc/public_key.json",
           "disable_jwk_security": true,
           "operation_debug": true
@@ -233,7 +233,7 @@
         "auth/validator": {
           "alg": "RS256",
           "roles_key": "roles",
-          "roles": ["professor", "registrar"],
+          "roles": ["instructor", "registrar"],
           "jwk_local_path": "./etc/public_key.json",
           "disable_jwk_security": true,
           "operation_debug": true
@@ -257,7 +257,7 @@
         "auth/validator": {
           "alg": "RS256",
           "roles_key": "roles",
-          "roles": ["professor", "registrar"],
+          "roles": ["instructor", "registrar"],
           "jwk_local_path": "./etc/public_key.json",
           "disable_jwk_security": true,
           "operation_debug": true
@@ -281,7 +281,7 @@
         "auth/validator": {
           "alg": "RS256",
           "roles_key": "roles",
-          "roles": ["professor", "registrar"],
+          "roles": ["instructor", "registrar"],
           "jwk_local_path": "./etc/public_key.json",
           "disable_jwk_security": true,
           "operation_debug": true
@@ -305,7 +305,7 @@
         "auth/validator": {
           "alg": "RS256",
           "roles_key": "roles",
-          "roles": ["professor", "registrar"],
+          "roles": ["instructor", "registrar"],
           "jwk_local_path": "./etc/public_key.json",
           "disable_jwk_security": true,
           "operation_debug": true
@@ -329,7 +329,7 @@
         "auth/validator": {
           "alg": "RS256",
           "roles_key": "roles",
-          "roles": ["professor", "registrar"],
+          "roles": ["instructor", "registrar"],
           "jwk_local_path": "./etc/public_key.json",
           "disable_jwk_security": true,
           "operation_debug": true
