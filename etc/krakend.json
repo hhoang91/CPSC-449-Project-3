@@ -258,6 +258,34 @@
       }
     },
     {
+      "_comment": "Student 4: View current waitlist position",
+      "endpoint": "/api/sections/{section_id}/waitlistposition/",
+      "method": "GET",
+      "input_headers": ["x-cwid"],
+      "backend": [
+        {
+          "url_pattern": "/sections/{section_id}/waitlistposition/",
+          "host": ["http://localhost:5100"],
+          "extra_config": {
+            "backend/http": {
+              "return_error_details": "backend_b"
+            }
+          }
+        }
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "RS256",
+          "roles_key": "roles",
+          "roles": ["Student"],
+          "jwk_local_path": "./etc/public_key.json",
+          "disable_jwk_security": true,
+          "operation_debug": true,
+          "propagate_claims": [["jti", "x-cwid"]]
+        }
+      }
+    },
+    {
       "_comment": "Instructor 1: Retreive current enrollment for the classes.",
       "endpoint": "/api/classes/{section_id}/students/",
       "method": "GET",
