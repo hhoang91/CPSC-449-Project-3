@@ -71,7 +71,7 @@ def create_course(
         )
     return record
 
-@app.post("/sections/", status_code=status.HTTP_201_CREATED)
+@app.post("/classes/", status_code=status.HTTP_201_CREATED)
 def create_class(
     body_data: ClassCreate, response: Response, db: sqlite3.Connection = Depends(get_db)
 ):
@@ -118,7 +118,7 @@ def create_class(
     response.headers["Location"] = f"/classes/{cur.lastrowid}"
     return {"detail": "Success", "inserted_id": cur.lastrowid}
 
-@app.delete("/sections/{id}", status_code=status.HTTP_200_OK)
+@app.delete("/classes/{id}", status_code=status.HTTP_200_OK)
 def delete_class(
     id: int, response: Response, db: sqlite3.Connection = Depends(get_db)
 ):
@@ -152,7 +152,7 @@ def delete_class(
 
     return {"detail": "Item deleted successfully"}
 
-@app.patch("/sections/{id}", status_code=status.HTTP_200_OK)
+@app.patch("/classes/{id}", status_code=status.HTTP_200_OK)
 def update_class(
     id: int,
     body_data: ClassPatch,
@@ -247,7 +247,7 @@ def get_available_classes(db: sqlite3.Connection = Depends(get_db)):
     finally:
         return {"classes": classes.fetchall()}
 
-@app.post("/enroll/")
+@app.post("/enrollment/")
 def enroll(section_id: Annotated[int, Body(embed=True)],
            student_id: int = Header(
                alias="x-cwid", description="A unique ID for students, instructors, and registrars"),
@@ -333,9 +333,9 @@ def enroll(section_id: Annotated[int, Body(embed=True)],
 
     return {"detail": "success"}
 
-@app.delete("/enrollment/{section_id}", status_code=status.HTTP_200_OK)
+@app.delete("/enrollment/{class_id}", status_code=status.HTTP_200_OK)
 def drop_class(
-    section_id: int,
+    class_id: int,
     student_id: int = Header(
         alias="x-cwid", description="A unique ID for students, instructors, and registrars"),
     db: sqlite3.Connection = Depends(get_db)
@@ -355,7 +355,7 @@ def drop_class(
     """
     try:
         curr = db.execute(
-            "DELETE FROM enrollment WHERE class_id=? AND student_id=?", [section_id, student_id])
+            "DELETE FROM enrollment WHERE class_id=? AND student_id=?", [class_id, student_id])
 
         if curr.rowcount == 0:
             raise HTTPException(
@@ -366,14 +366,14 @@ def drop_class(
             """
             INSERT INTO droplist (class_id, student_id, drop_date, administrative) 
             VALUES (?, ?, datetime('now'), 0);
-            """, [section_id, student_id]
+            """, [class_id, student_id]
         )
 
         db.commit()
 
         # Trigger auto enrollment
         if is_auto_enroll_enabled(db):        
-            enroll_students_from_waitlist(db, [section_id])
+            enroll_students_from_waitlist(db, [class_id])
 
     except sqlite3.IntegrityError as e:
         raise HTTPException(
@@ -383,9 +383,9 @@ def drop_class(
 
     return {"detail": "Item deleted successfully"}
 
-@app.get("/sections/{section_id}/waitlistposition/")
+@app.get("/classes/{class_id}/waitlistposition/")
 def get_current_waitlist_position(
-    section_id:int,
+    class_id:int,
     student_id: int = Header(
         alias="x-cwid", description="A unique ID for students, instructors, and registrars"),
     db: sqlite3.Connection = Depends(get_db)):
@@ -406,7 +406,7 @@ def get_current_waitlist_position(
                                     WHERE class_id=? AND 
                                             student_id=?)
             ;
-            """, [section_id, section_id, student_id]
+            """, [class_id, class_id, student_id]
         )
         return {"position": result.fetchone()[0]}
     except sqlite3.IntegrityError as e:
@@ -417,8 +417,8 @@ def get_current_waitlist_position(
         
 ############### ENDPOINTS FOR INSTRUCTORS ################
 
-@app.get("/classes/{section_id}/students")
-def get_class(section_id: int,
+@app.get("/classes/{class_id}/students")
+def get_class(class_id: int,
               instructor_id: int = Header(
                   alias="x-cwid", description="A unique ID for students, instructors, and registrars"),
               db: sqlite3.Connection = Depends(get_db)):
@@ -436,7 +436,7 @@ def get_class(section_id: int,
                 INNER JOIN enrollment e ON sec.id = e.class_id
                 INNER JOIN student stu ON e.student_id = stu.id 
             WHERE sec.id=? AND sec.instructor_id=?
-            """, [section_id, instructor_id]
+            """, [class_id, instructor_id]
         )
     except sqlite3.IntegrityError as e:
         raise HTTPException(
@@ -446,8 +446,8 @@ def get_class(section_id: int,
     finally:
         return {"students": result.fetchall()}
 
-@app.get("/classes/{section_id}/droplist")
-def get_class(section_id: int,
+@app.get("/classes/{class_id}/droplist")
+def get_class(class_id: int,
               instructor_id: int = Header(
                   alias="x-cwid", description="A unique ID for students, instructors, and registrars"),
               db: sqlite3.Connection = Depends(get_db)):
@@ -465,7 +465,7 @@ def get_class(section_id: int,
                 INNER JOIN droplist d ON sec.id = d.class_id
                 INNER JOIN student stu ON d.student_id = stu.id 
             WHERE sec.id=? AND sec.instructor_id=?
-            """, [section_id, instructor_id]
+            """, [class_id, instructor_id]
         )
     except sqlite3.IntegrityError as e:
         raise HTTPException(
@@ -475,9 +475,9 @@ def get_class(section_id: int,
     finally:
         return {"students": result.fetchall()}
 
-@app.delete("/enrollment/{section_id}/{student_id}/administratively/", status_code=status.HTTP_200_OK)
+@app.delete("/enrollment/{class_id}/{student_id}/administratively/", status_code=status.HTTP_200_OK)
 def drop_class(
-    section_id: int,
+    class_id: int,
     student_id: int,
     instructor_id: int = Header(
         alias="x-cwid", description="A unique ID for students, instructors, and registrars"),
@@ -506,7 +506,7 @@ def drop_class(
                 AND class_id IN (SELECT id 
                                     FROM "class" 
                                     WHERE id=? AND instructor_id=?);
-            """, [section_id, student_id, section_id, instructor_id])
+            """, [class_id, student_id, class_id, instructor_id])
 
         if curr.rowcount == 0:
             raise HTTPException(
@@ -517,13 +517,13 @@ def drop_class(
             """
             INSERT INTO droplist (class_id, student_id, drop_date, administrative) 
             VALUES (?, ?, datetime('now'), 1);
-            """, [section_id, student_id]
+            """, [class_id, student_id]
         )
         db.commit()
 
         # Trigger auto enrollment
         if is_auto_enroll_enabled(db):        
-            enroll_students_from_waitlist(db, [section_id])
+            enroll_students_from_waitlist(db, [class_id])
 
     except sqlite3.IntegrityError as e:
         raise HTTPException(

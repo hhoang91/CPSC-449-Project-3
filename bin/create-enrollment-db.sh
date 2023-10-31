@@ -7,7 +7,7 @@ DB_FILENAME="enrollment.db"
 DB_PATH="$DB_DIRECTORY$DB_FILENAME"
 
 if test -f $DB_PATH; then
-	echo "Error: User database already exists."
+	echo "Error: Enrollment database already exists."
 	exit 1
 fi
 
