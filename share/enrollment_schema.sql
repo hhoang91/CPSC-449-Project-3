@@ -16,17 +16,14 @@ DROP TABLE IF EXISTS instructor;
 CREATE TABLE instructor (
 	id INTEGER PRIMARY KEY,
 	first_name TEXT NOT NULL,
-	last_name TEXT NOT NULL,
-	email TEXT NOT NULL,
-	phone INTEGER NOT NULL
+	last_name TEXT NOT NULL
 );
 
 DROP TABLE IF EXISTS student;
 CREATE TABLE student (
 	id INTEGER PRIMARY KEY,
 	first_name TEXT NOT NULL,
-	last_name TEXT NOT NULL,
-	email TEXT NOT NULL
+	last_name TEXT NOT NULL
 );
 
 DROP TABLE IF EXISTS course;
