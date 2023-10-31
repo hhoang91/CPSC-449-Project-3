@@ -42,23 +42,25 @@
       ]
     },
     {
-      "endpoint": "/api/students/{student_id}/classes",
-      "method": "GET",
+      "_comment": "Registra 1: Set auto enrollment",
+      "endpoint": "/api/auto-enrollment/",
+      "method": "PUT",
       "backend": [
         {
-          "url_pattern": "/students/{student_id}/classes",
-          "host": [
-            "http://localhost:5000",
-            "http://localhost:5001",
-            "http://localhost:5002"
-          ]
+          "url_pattern": "/auto-enrollment/",
+          "host": ["http://localhost:5100"],
+          "extra_config": {
+            "backend/http": {
+              "return_error_details": "backend_b"
+            }
+          }
         }
       ],
       "extra_config": {
         "auth/validator": {
           "alg": "RS256",
           "roles_key": "roles",
-          "roles": ["registrar", "student", "instructor"],
+          "roles": ["Registra"],
           "jwk_local_path": "./etc/public_key.json",
           "disable_jwk_security": true,
           "operation_debug": true
@@ -66,50 +68,138 @@
       }
     },
     {
-      "endpoint": "/api/students/{student_id}/enrolled",
-      "method": "GET",
-      "backend": [
-        {
-          "url_pattern": "/students/{student_id}/enrolled",
-          "host": [
-            "http://localhost:5000",
-            "http://localhost:5001",
-            "http://localhost:5002"
-          ]
-        }
-      ],
-      "extra_config": {
-        "auth/validator": {
-          "alg": "RS256",
-          "roles_key": "roles",
-          "roles": ["registrar", "student", "instructor"],
-          "jwk_local_path": "./etc/public_key.json",
-          "disable_jwk_security": true,
-          "operation_debug": true
-        }
-      }
-    },
-    {
-      "endpoint": "/api/students/{student_id}/classes/{class_id}/enroll",
+      "_comment": "Registra 2: Creates a new course with the provided details.",
+      "endpoint": "/api/courses/",
       "method": "POST",
       "backend": [
         {
-          "url_pattern": "/students/{student_id}/classes/{class_id}/enroll",
-          "host": [
-            "http://localhost:5000",
-            "http://localhost:5001",
-            "http://localhost:5002"
-          ]
+          "url_pattern": "/courses/",
+          "host": ["http://localhost:5100"],
+          "extra_config": {
+            "backend/http": {
+              "return_error_details": "backend_b"
+            }
+          }
         }
       ],
       "extra_config": {
         "auth/validator": {
           "alg": "RS256",
           "roles_key": "roles",
-          "roles": ["registrar", "student", "instructor"],
+          "roles": ["Registra"],
           "jwk_local_path": "./etc/public_key.json",
           "disable_jwk_security": true,
           "operation_debug": true
+        }
+      }
+    },
+    {
+      "_comment": "Registra 3: Creates a new section.",
+      "endpoint": "/api/sections/",
+      "method": "POST",
+      "backend": [
+        {
+          "url_pattern": "/sections/",
+          "host": ["http://localhost:5100"],
+          "extra_config": {
+            "backend/http": {
+              "return_error_details": "backend_b"
+            }
+          }
+        }
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "RS256",
+          "roles_key": "roles",
+          "roles": ["Registra"],
+          "jwk_local_path": "./etc/public_key.json",
+          "disable_jwk_security": true,
+          "operation_debug": true
+        }
+      }
+    },
+    {
+      "_comment": "Registra 4: Deletes a specific section.",
+      "endpoint": "/api/sections/{id}",
+      "method": "DELETE",
+      "backend": [
+        {
+          "url_pattern": "/sections/{id}",
+          "host": ["http://localhost:5100"],
+          "extra_config": {
+            "backend/http": {
+              "return_error_details": "backend_b"
+            }
+          }
+        }
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "RS256",
+          "roles_key": "roles",
+          "roles": ["Registra"],
+          "jwk_local_path": "./etc/public_key.json",
+          "disable_jwk_security": true,
+          "operation_debug": true
+        }
+      }
+    },
+    {
+      "_comment": "Registra 5: Updates specific details of a section.",
+      "endpoint": "/api/sections/{id}",
+      "method": "PATCH",
+      "backend": [
+        {
+          "url_pattern": "/sections/{id}",
+          "host": ["http://localhost:5100"],
+          "extra_config": {
+            "backend/http": {
+              "return_error_details": "backend_b"
+            }
+          }
+        }
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "RS256",
+          "roles_key": "roles",
+          "roles": ["Registra"],
+          "jwk_local_path": "./etc/public_key.json",
+          "disable_jwk_security": true,
+          "operation_debug": true
+        }
+      }
+    },
+    {
+      "_comment": "Student 1: Student enrolls in a section",
+      "endpoint": "/api/enroll/",
+      "method": "POST",
+      "input_headers": ["x-cwid", "x-first-name", "x-last-name"],
+      "backend": [
+        {
+          "url_pattern": "/enroll/",
+          "host": ["http://localhost:5100"],
+          "extra_config": {
+            "backend/http": {
+              "return_error_details": "backend_b"
+            }
+          }
+        }
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "RS256",
+          "roles_key": "roles",
+          "roles": ["Student"],
+          "jwk_local_path": "./etc/public_key.json",
+          "disable_jwk_security": true,
+          "operation_debug": true,
+          "propagate_claims": [
+            ["jti", "x-cwid"],
+            ["first_name", "x-first-name"],
+            ["last_name", "x-last-name"]
+          ]
         }
       }
     },
@@ -141,270 +231,6 @@
           "disable_jwk_security": true,
           "operation_debug": true,
           "propagate_claims": [["jti", "x-cwid"]]
-        }
-      }
-    },
-    {
-      "endpoint": "/api/waitlist/classes",
-      "method": "GET",
-      "backend": [
-        {
-          "url_pattern": "/waitlist/classes",
-          "host": [
-            "http://localhost:5000",
-            "http://localhost:5001",
-            "http://localhost:5002"
-          ]
-        }
-      ],
-      "extra_config": {
-        "auth/validator": {
-          "alg": "RS256",
-          "roles_key": "roles",
-          "roles": ["registrar", "student", "instructor"],
-          "jwk_local_path": "./etc/public_key.json",
-          "disable_jwk_security": true,
-          "operation_debug": true
-        }
-      }
-    },
-    {
-      "endpoint": "/api/waitlist/students/{student_id}",
-      "method": "GET",
-      "backend": [
-        {
-          "url_pattern": "/waitlist/students/{student_id}",
-          "host": [
-            "http://localhost:5000",
-            "http://localhost:5001",
-            "http://localhost:5002"
-          ]
-        }
-      ],
-      "extra_config": {
-        "auth/validator": {
-          "alg": "RS256",
-          "roles_key": "roles",
-          "roles": ["registrar", "student", "instructor"],
-          "jwk_local_path": "./etc/public_key.json",
-          "disable_jwk_security": true,
-          "operation_debug": true
-        }
-      }
-    },
-    {
-      "endpoint": "/api/waitlist/students/{student_id}/classes/{class_id}/drop",
-      "method": "PUT",
-      "backend": [
-        {
-          "url_pattern": "/waitlist/students/{student_id}/classes/{class_id}/drop",
-          "host": [
-            "http://localhost:5000",
-            "http://localhost:5001",
-            "http://localhost:5002"
-          ]
-        }
-      ],
-      "extra_config": {
-        "auth/validator": {
-          "alg": "RS256",
-          "roles_key": "roles",
-          "roles": ["registrar", "student", "instructor"],
-          "jwk_local_path": "./etc/public_key.json",
-          "disable_jwk_security": true,
-          "operation_debug": true
-        }
-      }
-    },
-    {
-      "endpoint": "/api/waitlist/instructors/{instructor_id}/classes/{class_id}",
-      "method": "GET",
-      "backend": [
-        {
-          "url_pattern": "/waitlist/instructors/{instructor_id}/classes/{class_id}",
-          "host": [
-            "http://localhost:5000",
-            "http://localhost:5001",
-            "http://localhost:5002"
-          ]
-        }
-      ],
-      "extra_config": {
-        "auth/validator": {
-          "alg": "RS256",
-          "roles_key": "roles",
-          "roles": ["instructor", "registrar"],
-          "jwk_local_path": "./etc/public_key.json",
-          "disable_jwk_security": true,
-          "operation_debug": true
-        }
-      }
-    },
-    {
-      "endpoint": "/api/instructors/{instructor_id}/classes/{class_id}/enrollment",
-      "method": "GET",
-      "backend": [
-        {
-          "url_pattern": "/instructors/{instructor_id}/classes/{class_id}/enrollment",
-          "host": [
-            "http://localhost:5000",
-            "http://localhost:5001",
-            "http://localhost:5002"
-          ]
-        }
-      ],
-      "extra_config": {
-        "auth/validator": {
-          "alg": "RS256",
-          "roles_key": "roles",
-          "roles": ["instructor", "registrar"],
-          "jwk_local_path": "./etc/public_key.json",
-          "disable_jwk_security": true,
-          "operation_debug": true
-        }
-      }
-    },
-    {
-      "endpoint": "/api/instructors/{instructor_id}/classes/{class_id}/drop",
-      "method": "GET",
-      "backend": [
-        {
-          "url_pattern": "/instructors/{instructor_id}/classes/{class_id}/drop",
-          "host": [
-            "http://localhost:5000",
-            "http://localhost:5001",
-            "http://localhost:5002"
-          ]
-        }
-      ],
-      "extra_config": {
-        "auth/validator": {
-          "alg": "RS256",
-          "roles_key": "roles",
-          "roles": ["instructor", "registrar"],
-          "jwk_local_path": "./etc/public_key.json",
-          "disable_jwk_security": true,
-          "operation_debug": true
-        }
-      }
-    },
-    {
-      "endpoint": "/api/instructors/{instructor_id}/classes/{class_id}/students/{student_id}/drop",
-      "method": "POST",
-      "backend": [
-        {
-          "url_pattern": "/instructors/{instructor_id}/classes/{class_id}/students/{student_id}/drop",
-          "host": [
-            "http://localhost:5000",
-            "http://localhost:5001",
-            "http://localhost:5002"
-          ]
-        }
-      ],
-      "extra_config": {
-        "auth/validator": {
-          "alg": "RS256",
-          "roles_key": "roles",
-          "roles": ["instructor", "registrar"],
-          "jwk_local_path": "./etc/public_key.json",
-          "disable_jwk_security": true,
-          "operation_debug": true
-        }
-      }
-    },
-    {
-      "endpoint": "/api/instructors/registrar/classes/",
-      "method": "POST",
-      "backend": [
-        {
-          "url_pattern": "/registrar/classes/",
-          "host": [
-            "http://localhost:5000",
-            "http://localhost:5001",
-            "http://localhost:5002"
-          ]
-        }
-      ],
-      "extra_config": {
-        "auth/validator": {
-          "alg": "RS256",
-          "roles_key": "roles",
-          "roles": ["instructor", "registrar"],
-          "jwk_local_path": "./etc/public_key.json",
-          "disable_jwk_security": true,
-          "operation_debug": true
-        }
-      }
-    },
-    {
-      "endpoint": "/api/registrar/classes/{class_id}",
-      "method": "DELETE",
-      "backend": [
-        {
-          "url_pattern": "/registrar/classes/{class_id}",
-          "host": [
-            "http://localhost:5000",
-            "http://localhost:5001",
-            "http://localhost:5002"
-          ]
-        }
-      ],
-      "extra_config": {
-        "auth/validator": {
-          "alg": "RS256",
-          "roles_key": "roles",
-          "roles": ["registrar"],
-          "jwk_local_path": "./etc/public_key.json",
-          "disable_jwk_security": true,
-          "operation_debug": true
-        }
-      }
-    },
-    {
-      "endpoint": "/api/registrar/classes/{class_id}/instructors/{instructor_id}",
-      "method": "PUT",
-      "backend": [
-        {
-          "url_pattern": "/registrar/classes/{class_id}/instructors/{instructor_id}",
-          "host": [
-            "http://localhost:5000",
-            "http://localhost:5001",
-            "http://localhost:5002"
-          ]
-        }
-      ],
-      "extra_config": {
-        "auth/validator": {
-          "alg": "RS256",
-          "roles_key": "roles",
-          "roles": ["registrar"],
-          "jwk_local_path": "./etc/public_key.json",
-          "disable_jwk_security": true,
-          "operation_debug": true
-        }
-      }
-    },
-    {
-      "endpoint": "/api/registrar/automatic-enrollment/freeze",
-      "method": "PUT",
-      "backend": [
-        {
-          "url_pattern": "/registrar/automatic-enrollment/freeze",
-          "host": [
-            "http://localhost:5000",
-            "http://localhost:5001",
-            "http://localhost:5002"
-          ]
-        }
-      ],
-      "extra_config": {
-        "auth/validator": {
-          "alg": "RS256",
-          "roles_key": "roles",
-          "roles": ["registrar"],
-          "jwk_local_path": "./etc/public_key.json",
-          "disable_jwk_security": true,
-          "operation_debug": true
         }
       }
     }
