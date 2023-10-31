@@ -231,12 +231,12 @@
     },
     {
       "_comment": "Student 3: Student drop a class",
-      "endpoint": "/api/dropclass/{section_id}/",
+      "endpoint": "/api/enrollment/{section_id}/",
       "method": "DELETE",
       "input_headers": ["x-cwid"],
       "backend": [
         {
-          "url_pattern": "/dropclass/{section_id}/",
+          "url_pattern": "/enrollment/{section_id}/",
           "host": ["http://localhost:5100"],
           "extra_config": {
             "backend/http": {
@@ -250,6 +250,90 @@
           "alg": "RS256",
           "roles_key": "roles",
           "roles": ["Student"],
+          "jwk_local_path": "./etc/public_key.json",
+          "disable_jwk_security": true,
+          "operation_debug": true,
+          "propagate_claims": [["jti", "x-cwid"]]
+        }
+      }
+    },
+    {
+      "_comment": "Instructor 1: Retreive current enrollment for the classes.",
+      "endpoint": "/api/classes/{section_id}/students/",
+      "method": "GET",
+      "input_headers": ["x-cwid"],
+      "backend": [
+        {
+          "url_pattern": "/classes/{section_id}/students/",
+          "host": ["http://localhost:5100"],
+          "extra_config": {
+            "backend/http": {
+              "return_error_details": "backend_b"
+            }
+          }
+        }
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "RS256",
+          "roles_key": "roles",
+          "roles": ["Instructor"],
+          "jwk_local_path": "./etc/public_key.json",
+          "disable_jwk_security": true,
+          "operation_debug": true,
+          "propagate_claims": [["jti", "x-cwid"]]
+        }
+      }
+    },
+    {
+      "_comment": "Instructor 2: Retreive students who have dropped the class.",
+      "endpoint": "/api/classes/{section_id}/droplist/",
+      "method": "GET",
+      "input_headers": ["x-cwid"],
+      "backend": [
+        {
+          "url_pattern": "/classes/{section_id}/droplist/",
+          "host": ["http://localhost:5100"],
+          "extra_config": {
+            "backend/http": {
+              "return_error_details": "backend_b"
+            }
+          }
+        }
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "RS256",
+          "roles_key": "roles",
+          "roles": ["Instructor"],
+          "jwk_local_path": "./etc/public_key.json",
+          "disable_jwk_security": true,
+          "operation_debug": true,
+          "propagate_claims": [["jti", "x-cwid"]]
+        }
+      }
+    },
+    {
+      "_comment": "Instructor 3: Drop students administratively.",
+      "endpoint": "/api/enrollment/{section_id}/{student_id}/administratively/",
+      "method": "DELETE",
+      "input_headers": ["x-cwid"],
+      "backend": [
+        {
+          "url_pattern": "/enrollment/{section_id}/{student_id}/administratively/",
+          "host": ["http://localhost:5100"],
+          "extra_config": {
+            "backend/http": {
+              "return_error_details": "backend_b"
+            }
+          }
+        }
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "RS256",
+          "roles_key": "roles",
+          "roles": ["Instructor"],
           "jwk_local_path": "./etc/public_key.json",
           "disable_jwk_security": true,
           "operation_debug": true,
