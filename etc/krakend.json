@@ -95,11 +95,11 @@
     },
     {
       "_comment": "Registra 3: Creates a new section.",
-      "endpoint": "/api/sections/",
+      "endpoint": "/api/classes/",
       "method": "POST",
       "backend": [
         {
-          "url_pattern": "/sections/",
+          "url_pattern": "/classes/",
           "host": ["http://localhost:5100"],
           "extra_config": {
             "backend/http": {
@@ -121,11 +121,11 @@
     },
     {
       "_comment": "Registra 4: Deletes a specific section.",
-      "endpoint": "/api/sections/{id}",
+      "endpoint": "/api/classes/{id}",
       "method": "DELETE",
       "backend": [
         {
-          "url_pattern": "/sections/{id}",
+          "url_pattern": "/classes/{id}",
           "host": ["http://localhost:5100"],
           "extra_config": {
             "backend/http": {
@@ -147,11 +147,11 @@
     },
     {
       "_comment": "Registra 5: Updates specific details of a section.",
-      "endpoint": "/api/sections/{id}",
+      "endpoint": "/api/classes/{id}",
       "method": "PATCH",
       "backend": [
         {
-          "url_pattern": "/sections/{id}",
+          "url_pattern": "/classes/{id}",
           "host": ["http://localhost:5100"],
           "extra_config": {
             "backend/http": {
@@ -199,12 +199,12 @@
     },
     {
       "_comment": "Student 2: Student enrolls in a section",
-      "endpoint": "/api/enroll/",
+      "endpoint": "/api/enrollment/",
       "method": "POST",
       "input_headers": ["x-cwid", "x-first-name", "x-last-name"],
       "backend": [
         {
-          "url_pattern": "/enroll/",
+          "url_pattern": "/enrollment/",
           "host": ["http://localhost:5100"],
           "extra_config": {
             "backend/http": {
@@ -231,12 +231,12 @@
     },
     {
       "_comment": "Student 3: Student drop a class",
-      "endpoint": "/api/enrollment/{section_id}/",
+      "endpoint": "/api/enrollment/{class_id}/",
       "method": "DELETE",
       "input_headers": ["x-cwid"],
       "backend": [
         {
-          "url_pattern": "/enrollment/{section_id}/",
+          "url_pattern": "/enrollment/{class_id}/",
           "host": ["http://localhost:5100"],
           "extra_config": {
             "backend/http": {
@@ -287,12 +287,12 @@
     },
     {
       "_comment": "Instructor 1: Retreive current enrollment for the classes.",
-      "endpoint": "/api/classes/{section_id}/students/",
+      "endpoint": "/api/classes/{class_id}/students/",
       "method": "GET",
       "input_headers": ["x-cwid"],
       "backend": [
         {
-          "url_pattern": "/classes/{section_id}/students/",
+          "url_pattern": "/classes/{class_id}/students/",
           "host": ["http://localhost:5100"],
           "extra_config": {
             "backend/http": {
@@ -315,12 +315,12 @@
     },
     {
       "_comment": "Instructor 2: Retreive students who have dropped the class.",
-      "endpoint": "/api/classes/{section_id}/droplist/",
+      "endpoint": "/api/classes/{class_id}/droplist/",
       "method": "GET",
       "input_headers": ["x-cwid"],
       "backend": [
         {
-          "url_pattern": "/classes/{section_id}/droplist/",
+          "url_pattern": "/classes/{class_id}/droplist/",
           "host": ["http://localhost:5100"],
           "extra_config": {
             "backend/http": {
@@ -343,12 +343,12 @@
     },
     {
       "_comment": "Instructor 3: Drop students administratively.",
-      "endpoint": "/api/enrollment/{section_id}/{student_id}/administratively/",
+      "endpoint": "/api/enrollment/{class_id}/{student_id}/administratively/",
       "method": "DELETE",
       "input_headers": ["x-cwid"],
       "backend": [
         {
-          "url_pattern": "/enrollment/{section_id}/{student_id}/administratively/",
+          "url_pattern": "/enrollment/{class_id}/{student_id}/administratively/",
           "host": ["http://localhost:5100"],
           "extra_config": {
             "backend/http": {
