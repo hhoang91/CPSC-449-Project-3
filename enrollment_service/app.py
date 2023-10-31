@@ -248,7 +248,7 @@ def get_available_classes(db: sqlite3.Connection = Depends(get_db)):
         return {"classes": classes.fetchall()}
 
 @app.post("/enrollment/")
-def enroll(section_id: Annotated[int, Body(embed=True)],
+def enroll(class_id: Annotated[int, Body(embed=True)],
            student_id: int = Header(
                alias="x-cwid", description="A unique ID for students, instructors, and registrars"),
            first_name: str = Header(alias="x-first-name"),
@@ -258,7 +258,7 @@ def enroll(section_id: Annotated[int, Body(embed=True)],
     Student enrolls in a class
 
     Parameters:
-    - section_id (int, in the request body): The unique identifier of the class where students will be enrolled.
+    - class_id (int, in the request body): The unique identifier of the class where students will be enrolled.
     - student_id (int, in the request header): The unique identifier of the student who is enrolling.
 
     Returns:
@@ -278,7 +278,7 @@ def enroll(section_id: Annotated[int, Body(embed=True)],
                     (room_capacity - COUNT(enrollment.class_id)) AS available_seats
             FROM class LEFT JOIN enrollment ON class.id = enrollment.class_id 
             WHERE class.id = ?;
-            """, [section_id]).fetchone()
+            """, [class_id]).fetchone()
 
         if not class_info:
             raise HTTPException(
@@ -302,7 +302,7 @@ def enroll(section_id: Annotated[int, Body(embed=True)],
                 SELECT COUNT(student_id) 
                 FROM waitlist 
                 WHERE class_id = ?
-                """, [section_id]).fetchone()
+                """, [class_id]).fetchone()
 
             if int(result[0]) >= WAITLIST_CAPACITY:
                 raise HTTPException(
@@ -312,7 +312,7 @@ def enroll(section_id: Annotated[int, Body(embed=True)],
                     """
                     INSERT INTO waitlist(class_id, student_id, waitlist_date) 
                     VALUES(?, ?, datetime('now'))
-                    """, [section_id, student_id]
+                    """, [class_id, student_id]
                 )
         else:
             # ----- INSERT INTO ENROLLMENT TABLE -----
@@ -320,7 +320,7 @@ def enroll(section_id: Annotated[int, Body(embed=True)],
                 """
                 INSERT INTO enrollment(class_id, student_id, enrollment_date) 
                 VALUES(?, ?, datetime('now'))
-                """, [section_id, student_id]
+                """, [class_id, student_id]
             )
 
         db.commit()
@@ -344,7 +344,7 @@ def drop_class(
     Handles a DELETE request to drop a student (himself/herself) from a specific class.
 
     Parameters:
-    - section_id (int): The ID of the class from which the student wants to drop.
+    - class_id (int): The ID of the class from which the student wants to drop.
     - student_id (int, in the header): A unique ID for students, instructors, and registrars.
 
     Returns:
@@ -414,11 +414,48 @@ def get_current_waitlist_position(
             status_code=status.HTTP_409_CONFLICT,
             detail={"type": type(e).__name__, "msg": str(e)},
         )
-        
+
+@app.delete("/waitlist/{class_id}/", status_code=status.HTTP_200_OK)
+def remove_from_waitlist(
+    class_id: int,
+    student_id: int = Header(
+        alias="x-cwid", description="A unique ID for students, instructors, and registrars"),
+    db: sqlite3.Connection = Depends(get_db)
+):
+    """
+    Students remove themselves from waitlist
+
+    Parameters:
+    - class_id (int): The ID of the class from which the student wants to drop.
+    - student_id (int, in the header): A unique ID for students, instructors, and registrars.
+
+    Returns:
+    - dict: A dictionary with the detail message indicating the success of the operation.
+
+    Raises:
+    - HTTPException (409): If a conflict occurs
+    """
+    try:
+        curr = db.execute(
+            "DELETE FROM waitlist WHERE class_id=? AND student_id=?", [class_id, student_id])
+
+        if curr.rowcount == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Record Not Found"
+            )
+
+    except sqlite3.IntegrityError as e:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail={"type": type(e).__name__, "msg": str(e)},
+        )
+
+    return {"detail": "Item deleted successfully"}
+
 ############### ENDPOINTS FOR INSTRUCTORS ################
 
 @app.get("/classes/{class_id}/students")
-def get_class(class_id: int,
+def get_current_enrollment(class_id: int,
               instructor_id: int = Header(
                   alias="x-cwid", description="A unique ID for students, instructors, and registrars"),
               db: sqlite3.Connection = Depends(get_db)):
@@ -446,8 +483,42 @@ def get_class(class_id: int,
     finally:
         return {"students": result.fetchall()}
 
-@app.get("/classes/{class_id}/droplist")
-def get_class(class_id: int,
+@app.get("/classes/{class_id}/waitlist/")
+def get_waitlist(
+    class_id:int,
+    instructor_id: int = Header(
+        alias="x-cwid", description="A unique ID for students, instructors, and registrars"),
+    db: sqlite3.Connection = Depends(get_db)):
+    """
+    Retreive current waiting list for the class.
+
+    Parameters:
+    - class_id (int): The ID of the class.
+
+    Returns:
+    - dict: A dictionary containing the details of the classes
+    """
+    try:
+        result = db.execute(
+            """
+            SELECT stu.id, stu.first_name, stu.last_name, w.waitlist_date
+            FROM class c
+                INNER JOIN waitlist w ON c.id = w.class_id
+                INNER JOIN student stu ON w.student_id = stu.id 
+            WHERE c.id=? AND c.instructor_id=?
+            ORDER BY w.waitlist_date ASC
+            """, [class_id, instructor_id]
+        )
+    except sqlite3.IntegrityError as e:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail={"type": type(e).__name__, "msg": str(e)},
+        )
+    finally:
+        return {"students": result.fetchall()}
+
+@app.get("/classes/{class_id}/droplist/")
+def get_droplist(class_id: int,
               instructor_id: int = Header(
                   alias="x-cwid", description="A unique ID for students, instructors, and registrars"),
               db: sqlite3.Connection = Depends(get_db)):
@@ -487,7 +558,7 @@ def drop_class(
     Handles a DELETE request to administratively drop a student from a specific class.
 
     Parameters:
-    - section_id (int): The ID of the class from which the student is being administratively dropped.
+    - class_id (int): The ID of the class from which the student is being administratively dropped.
     - student_id (int): The ID of the student being administratively dropped.
     - instructor_id (int, In the header): A unique ID for students, instructors, and registrars.
 
