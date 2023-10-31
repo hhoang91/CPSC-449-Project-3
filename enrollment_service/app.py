@@ -72,7 +72,7 @@ def create_course(
     return record
 
 @app.post("/sections/", status_code=status.HTTP_201_CREATED)
-def create_section(
+def create_class(
     body_data: ClassCreate, response: Response, db: sqlite3.Connection = Depends(get_db)
 ):
     """
@@ -102,7 +102,7 @@ def create_section(
     try:
         cur = db.execute(
             """
-            INSERT INTO section(dept_code, course_num, section_no, 
+            INSERT INTO class(dept_code, course_num, section_no, 
                     academic_year, semester, instructor_id, room_num, room_capacity, 
                     course_start_date, enrollment_start, enrollment_end)
             VALUES(:dept_code, :course_num, :section_no,
@@ -119,7 +119,7 @@ def create_section(
     return {"detail": "Success", "inserted_id": cur.lastrowid}
 
 @app.delete("/sections/{id}", status_code=status.HTTP_200_OK)
-def delete_section(
+def delete_class(
     id: int, response: Response, db: sqlite3.Connection = Depends(get_db)
 ):
     """
@@ -137,7 +137,7 @@ def delete_section(
     - HTTPException (409): If there is a conflict in the delete operation.
     """
     try:
-        curr = db.execute("DELETE FROM section WHERE id=?;", [id])
+        curr = db.execute("DELETE FROM class WHERE id=?;", [id])
 
         if curr.rowcount == 0:
             raise HTTPException(
@@ -153,14 +153,14 @@ def delete_section(
     return {"detail": "Item deleted successfully"}
 
 @app.patch("/sections/{id}", status_code=status.HTTP_200_OK)
-def update_section(
+def update_class(
     id: int,
     body_data: ClassPatch,
     response: Response,
     db: sqlite3.Connection = Depends(get_db),
 ):
     """
-    Updates specific details of a section.
+    Updates specific details of a class.
 
     Parameters:
     - `class` (ClassPatch): The JSON object representing the class with the following properties:
@@ -194,7 +194,7 @@ def update_section(
         values.append(id)  # WHERE id = ?
 
         # Define a parameterized query with placeholders & values
-        update_query = f"UPDATE section SET {keys} WHERE id = ?"
+        update_query = f"UPDATE class SET {keys} WHERE id = ?"
 
         # Execute the query
         curr = db.execute(update_query, values)
@@ -226,16 +226,16 @@ def get_available_classes(db: sqlite3.Connection = Depends(get_db)):
         classes = db.execute(
             """
             SELECT s.*
-            FROM "section" as s
+            FROM "class" as s
             WHERE datetime('now') BETWEEN s.enrollment_start AND s.enrollment_end 
                 AND (
                         (s.room_capacity > 
                             (SELECT COUNT(enrollment.student_id)
                             FROM enrollment
-                            WHERE section_id=s.id) > 0) 
+                            WHERE class_id=s.id) > 0) 
                         OR ((SELECT COUNT(waitlist.student_id)
                             FROM waitlist
-                            WHERE section_id=s.id) < ?)
+                            WHERE class_id=s.id) < ?)
                     );
             """, [WAITLIST_CAPACITY]
         )
@@ -258,7 +258,7 @@ def enroll(section_id: Annotated[int, Body(embed=True)],
     Student enrolls in a class
 
     Parameters:
-    - section_id (int, in the request body): The unique identifier of the section where students will be enrolled.
+    - section_id (int, in the request body): The unique identifier of the class where students will be enrolled.
     - student_id (int, in the request header): The unique identifier of the student who is enrolling.
 
     Returns:
@@ -275,14 +275,14 @@ def enroll(section_id: Annotated[int, Body(embed=True)],
         class_info = db.execute(
             """
             SELECT course_start_date, enrollment_start, enrollment_end, datetime('now') AS datetime_now, 
-                    (room_capacity - COUNT(enrollment.section_id)) AS available_seats
-            FROM section LEFT JOIN enrollment ON section.id = enrollment.section_id 
-            WHERE section.id = ?;
+                    (room_capacity - COUNT(enrollment.class_id)) AS available_seats
+            FROM class LEFT JOIN enrollment ON class.id = enrollment.class_id 
+            WHERE class.id = ?;
             """, [section_id]).fetchone()
 
         if not class_info:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Section Not Found")
+                status_code=status.HTTP_404_NOT_FOUND, detail="Class Not Found")
 
         if not (class_info["enrollment_start"] <= class_info["datetime_now"] <= class_info["enrollment_end"]):
             raise HTTPException(
@@ -301,7 +301,7 @@ def enroll(section_id: Annotated[int, Body(embed=True)],
                 """
                 SELECT COUNT(student_id) 
                 FROM waitlist 
-                WHERE section_id = ?
+                WHERE class_id = ?
                 """, [section_id]).fetchone()
 
             if int(result[0]) >= WAITLIST_CAPACITY:
@@ -310,7 +310,7 @@ def enroll(section_id: Annotated[int, Body(embed=True)],
             else:
                 db.execute(
                     """
-                    INSERT INTO waitlist(section_id, student_id, waitlist_date) 
+                    INSERT INTO waitlist(class_id, student_id, waitlist_date) 
                     VALUES(?, ?, datetime('now'))
                     """, [section_id, student_id]
                 )
@@ -318,7 +318,7 @@ def enroll(section_id: Annotated[int, Body(embed=True)],
             # ----- INSERT INTO ENROLLMENT TABLE -----
             db.execute(
                 """
-                INSERT INTO enrollment(section_id, student_id, enrollment_date) 
+                INSERT INTO enrollment(class_id, student_id, enrollment_date) 
                 VALUES(?, ?, datetime('now'))
                 """, [section_id, student_id]
             )
@@ -355,7 +355,7 @@ def drop_class(
     """
     try:
         curr = db.execute(
-            "DELETE FROM enrollment WHERE section_id=? AND student_id=?", [section_id, student_id])
+            "DELETE FROM enrollment WHERE class_id=? AND student_id=?", [section_id, student_id])
 
         if curr.rowcount == 0:
             raise HTTPException(
@@ -364,7 +364,7 @@ def drop_class(
         
         db.execute(
             """
-            INSERT INTO droplist (section_id, student_id, drop_date, administrative) 
+            INSERT INTO droplist (class_id, student_id, drop_date, administrative) 
             VALUES (?, ?, datetime('now'), 0);
             """, [section_id, student_id]
         )
@@ -400,10 +400,10 @@ def get_current_waitlist_position(
             """
             SELECT COUNT(student_id)
             FROM waitlist
-            WHERE section_id=? AND 
+            WHERE class_id=? AND 
                 waitlist_date <= (SELECT waitlist_date 
                                     FROM waitlist
-                                    WHERE section_id=? AND 
+                                    WHERE class_id=? AND 
                                             student_id=?)
             ;
             """, [section_id, section_id, student_id]
@@ -432,8 +432,8 @@ def get_class(section_id: int,
         result = db.execute(
             """
             SELECT stu.* 
-            FROM section sec
-                INNER JOIN enrollment e ON sec.id = e.section_id
+            FROM class sec
+                INNER JOIN enrollment e ON sec.id = e.class_id
                 INNER JOIN student stu ON e.student_id = stu.id 
             WHERE sec.id=? AND sec.instructor_id=?
             """, [section_id, instructor_id]
@@ -461,8 +461,8 @@ def get_class(section_id: int,
         result = db.execute(
             """
             SELECT stu.* 
-            FROM section sec
-                INNER JOIN droplist d ON sec.id = d.section_id
+            FROM class sec
+                INNER JOIN droplist d ON sec.id = d.class_id
                 INNER JOIN student stu ON d.student_id = stu.id 
             WHERE sec.id=? AND sec.instructor_id=?
             """, [section_id, instructor_id]
@@ -502,9 +502,9 @@ def drop_class(
             """
             DELETE 
             FROM enrollment
-            WHERE section_id = ? AND student_id=? 
-                AND section_id IN (SELECT id 
-                                    FROM "section" 
+            WHERE class_id = ? AND student_id=? 
+                AND class_id IN (SELECT id 
+                                    FROM "class" 
                                     WHERE id=? AND instructor_id=?);
             """, [section_id, student_id, section_id, instructor_id])
 
@@ -515,7 +515,7 @@ def drop_class(
         
         db.execute(
             """
-            INSERT INTO droplist (section_id, student_id, drop_date, administrative) 
+            INSERT INTO droplist (class_id, student_id, drop_date, administrative) 
             VALUES (?, ?, datetime('now'), 1);
             """, [section_id, student_id]
         )

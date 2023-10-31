@@ -461,7 +461,7 @@ INSERT INTO course (department_code, course_no, title) VALUES
   ('SOC', 301, 'Sociological Theories'),
   ('PHRN', 101, 'Introduction to Phrenology');
 
-INSERT INTO section (id, dept_code, course_num, section_no, academic_year, semester, instructor_id, room_num, room_capacity, course_start_date, enrollment_start, enrollment_end) VALUES 
+INSERT INTO class (id, dept_code, course_num, section_no, academic_year, semester, instructor_id, room_num, room_capacity, course_start_date, enrollment_start, enrollment_end) VALUES 
   (1, 'CPSC', 101, 1, 2023, 'SU', 1, 101, 30, '2023-06-12', '2023-06-01 09:00:00', '2023-06-15 17:00:00'),
   (2, 'CPSC', 201, 1, 2023, 'FA', 2, 102, 25, '2023-09-05', '2023-08-20 09:00:00', '2023-09-25 17:00:00'),
   (3, 'EGEC', 301, 1, 2023, 'SU', 3, 201, 20, '2023-06-12', '2023-05-30 09:00:00', '2023-06-15 17:00:00'),
@@ -479,7 +479,7 @@ INSERT INTO section (id, dept_code, course_num, section_no, academic_year, semes
   (15, 'PHRN', 101, 2, 2023, 'FA', 9, 501, 20, '2023-10-05', '2023-10-01 09:00:00', '2023-10-25 17:00:00'),
   (16, 'PHRN', 101, 2, 2024, 'SP', 9, 501, 20, '2024-01-31', '2023-10-01 09:00:00', '2024-02-15 17:00:00');;
 
-INSERT INTO enrollment (section_id, student_id, enrollment_date) VALUES 
+INSERT INTO enrollment (class_id, student_id, enrollment_date) VALUES 
   (2, 12345678, '2023-08-21 09:00:00'),
   (2, 23456789, '2023-08-22 09:00:00'),
   (2, 34567890, '2023-08-23 09:00:00'),
@@ -512,14 +512,14 @@ INSERT INTO enrollment (section_id, student_id, enrollment_date) VALUES
   (2, 12112383, '2023-08-27 14:10:00'),
   (16, 12112383, '2023-10-30 14:10:00');;
 
-INSERT INTO waitlist (section_id, student_id, waitlist_date) VALUES
+INSERT INTO waitlist (class_id, student_id, waitlist_date) VALUES
   (2, 65123456, '2023-08-28 09:00:00'),
   (2, 73123456, '2023-08-28 10:00:00'),
   (2, 76123456, '2023-08-28 11:30:00'),
   (2, 68123456, '2023-08-29 09:40:00'),
   (2, 85123456, '2023-08-29 09:50:00');
 
-INSERT INTO droplist (section_id, student_id, drop_date) VALUES 
+INSERT INTO droplist (class_id, student_id, drop_date) VALUES 
   (2, 65123456, '2023-08-24 09:00:00'),
   (2, 73123456, '2023-08-25 10:00:00'),
   (2, 76123456, '2023-08-27 11:30:00'),
