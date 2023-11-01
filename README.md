@@ -1,5 +1,5 @@
 # Student Enrollment
-Create a new user authentication service with read replication, then use it to implement authentication and load balancing through an API gateway.
+A back-end Web Service to manage course enrollment and waiting lists with functionality similar to TitanOnline.
 
 ## Installation
 run `sh ./bin/install.sh`.
