@@ -48,7 +48,11 @@
       "backend": [
         {
           "url_pattern": "/auto-enrollment/",
-          "host": ["http://localhost:5100"],
+          "host": [
+            "http://localhost:5100",
+            "http://localhost:5101",
+            "http://localhost:5102"
+          ],
           "extra_config": {
             "backend/http": {
               "return_error_details": "backend_b"
@@ -74,7 +78,11 @@
       "backend": [
         {
           "url_pattern": "/courses/",
-          "host": ["http://localhost:5100"],
+          "host": [
+            "http://localhost:5100",
+            "http://localhost:5101",
+            "http://localhost:5102"
+          ],
           "extra_config": {
             "backend/http": {
               "return_error_details": "backend_b"
@@ -94,13 +102,17 @@
       }
     },
     {
-      "_comment": "Registra 3: Creates a new section.",
+      "_comment": "Registra 3: Creates a new class.",
       "endpoint": "/api/classes/",
       "method": "POST",
       "backend": [
         {
           "url_pattern": "/classes/",
-          "host": ["http://localhost:5100"],
+          "host": [
+            "http://localhost:5100",
+            "http://localhost:5101",
+            "http://localhost:5102"
+          ],
           "extra_config": {
             "backend/http": {
               "return_error_details": "backend_b"
@@ -120,13 +132,17 @@
       }
     },
     {
-      "_comment": "Registra 4: Deletes a specific section.",
+      "_comment": "Registra 4: Deletes a specific class.",
       "endpoint": "/api/classes/{id}",
       "method": "DELETE",
       "backend": [
         {
           "url_pattern": "/classes/{id}",
-          "host": ["http://localhost:5100"],
+          "host": [
+            "http://localhost:5100",
+            "http://localhost:5101",
+            "http://localhost:5102"
+          ],
           "extra_config": {
             "backend/http": {
               "return_error_details": "backend_b"
@@ -146,13 +162,17 @@
       }
     },
     {
-      "_comment": "Registra 5: Updates specific details of a section.",
+      "_comment": "Registra 5: Updates specific details of a class.",
       "endpoint": "/api/classes/{id}",
       "method": "PATCH",
       "backend": [
         {
           "url_pattern": "/classes/{id}",
-          "host": ["http://localhost:5100"],
+          "host": [
+            "http://localhost:5100",
+            "http://localhost:5101",
+            "http://localhost:5102"
+          ],
           "extra_config": {
             "backend/http": {
               "return_error_details": "backend_b"
@@ -178,7 +198,11 @@
       "backend": [
         {
           "url_pattern": "/classes/available/",
-          "host": ["http://localhost:5100"],
+          "host": [
+            "http://localhost:5100",
+            "http://localhost:5101",
+            "http://localhost:5102"
+          ],
           "extra_config": {
             "backend/http": {
               "return_error_details": "backend_b"
@@ -198,14 +222,18 @@
       }
     },
     {
-      "_comment": "Student 2: Student enrolls in a section",
+      "_comment": "Student 2: Student enrolls in a class",
       "endpoint": "/api/enrollment/",
       "method": "POST",
       "input_headers": ["x-cwid", "x-first-name", "x-last-name"],
       "backend": [
         {
           "url_pattern": "/enrollment/",
-          "host": ["http://localhost:5100"],
+          "host": [
+            "http://localhost:5100",
+            "http://localhost:5101",
+            "http://localhost:5102"
+          ],
           "extra_config": {
             "backend/http": {
               "return_error_details": "backend_b"
@@ -237,7 +265,11 @@
       "backend": [
         {
           "url_pattern": "/enrollment/{class_id}/",
-          "host": ["http://localhost:5100"],
+          "host": [
+            "http://localhost:5100",
+            "http://localhost:5101",
+            "http://localhost:5102"
+          ],
           "extra_config": {
             "backend/http": {
               "return_error_details": "backend_b"
@@ -259,13 +291,49 @@
     },
     {
       "_comment": "Student 4: View current waitlist position",
-      "endpoint": "/api/sections/{section_id}/waitlistposition/",
+      "endpoint": "/api/classes/{class_id}/waitlistposition/",
       "method": "GET",
       "input_headers": ["x-cwid"],
       "backend": [
         {
-          "url_pattern": "/sections/{section_id}/waitlistposition/",
-          "host": ["http://localhost:5100"],
+          "url_pattern": "/classes/{class_id}/waitlistposition/",
+          "host": [
+            "http://localhost:5100",
+            "http://localhost:5101",
+            "http://localhost:5102"
+          ],
+          "extra_config": {
+            "backend/http": {
+              "return_error_details": "backend_b"
+            }
+          }
+        }
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "RS256",
+          "roles_key": "roles",
+          "roles": ["Student"],
+          "jwk_local_path": "./etc/public_key.json",
+          "disable_jwk_security": true,
+          "operation_debug": true,
+          "propagate_claims": [["jti", "x-cwid"]]
+        }
+      }
+    },
+    {
+      "_comment": "Student 5: Students remove themselves from waitlist",
+      "endpoint": "/api/waitlist/{class_id}/",
+      "method": "DELETE",
+      "input_headers": ["x-cwid"],
+      "backend": [
+        {
+          "url_pattern": "/waitlist/{class_id}/",
+          "host": [
+            "http://localhost:5100",
+            "http://localhost:5101",
+            "http://localhost:5102"
+          ],
           "extra_config": {
             "backend/http": {
               "return_error_details": "backend_b"
@@ -293,7 +361,11 @@
       "backend": [
         {
           "url_pattern": "/classes/{class_id}/students/",
-          "host": ["http://localhost:5100"],
+          "host": [
+            "http://localhost:5100",
+            "http://localhost:5101",
+            "http://localhost:5102"
+          ],
           "extra_config": {
             "backend/http": {
               "return_error_details": "backend_b"
@@ -321,7 +393,11 @@
       "backend": [
         {
           "url_pattern": "/classes/{class_id}/droplist/",
-          "host": ["http://localhost:5100"],
+          "host": [
+            "http://localhost:5100",
+            "http://localhost:5101",
+            "http://localhost:5102"
+          ],
           "extra_config": {
             "backend/http": {
               "return_error_details": "backend_b"
@@ -349,7 +425,12 @@
       "backend": [
         {
           "url_pattern": "/enrollment/{class_id}/{student_id}/administratively/",
-          "host": ["http://localhost:5100"],
+          "host": [
+            "http://localhost:5100",
+            "http://localhost:5101",
+            "http://localhost:5102"
+          ],
+
           "extra_config": {
             "backend/http": {
               "return_error_details": "backend_b"
@@ -362,37 +443,6 @@
           "alg": "RS256",
           "roles_key": "roles",
           "roles": ["Instructor"],
-          "jwk_local_path": "./etc/public_key.json",
-          "disable_jwk_security": true,
-          "operation_debug": true,
-          "propagate_claims": [["jti", "x-cwid"]]
-        }
-      }
-    },
-    {
-      "endpoint": "/api/students/classes/{class_id}",
-      "method": "DELETE",
-      "input_headers": ["x-cwid"],
-      "backend": [
-        {
-          "url_pattern": "/students/classes/{class_id}",
-          "host": [
-            "http://localhost:5000",
-            "http://localhost:5001",
-            "http://localhost:5002"
-          ],
-          "extra_config": {
-            "backend/http": {
-              "return_error_details": "backend_b"
-            }
-          }
-        }
-      ],
-      "extra_config": {
-        "auth/validator": {
-          "alg": "RS256",
-          "roles_key": "roles",
-          "roles": ["registrar", "student", "instructor"],
           "jwk_local_path": "./etc/public_key.json",
           "disable_jwk_security": true,
           "operation_debug": true,
