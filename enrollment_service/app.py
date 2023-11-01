@@ -20,9 +20,20 @@ def get_db():
 
 @app.put("/auto-enrollment/")
 def set_auto_enrollment(enabled: Annotated[bool, Body(embed=True)], db: sqlite3.Connection = Depends(get_db)):
+    """
+    Endpoint for enabling/disabling automatic enrollment.
+
+    Parameters:
+    - enabled (bool): A boolean indicating whether automatic enrollment should be enabled or disabled.
+
+    Raises:
+    - HTTPException (409): If there is an integrity error while updating the database.
+
+    Returns:
+        dict: A dictionary containing a detail message confirming the status of auto enrollment.
+    """
     try:
-        flag = 1 if enabled else 0
-        db.execute("UPDATE configs set automatic_enrollment = ?;", [flag])
+        db.execute("UPDATE configs set automatic_enrollment = ?;", [enabled])
         db.commit()
 
         if enabled:
@@ -383,7 +394,7 @@ def drop_class(
 
     return {"detail": "Item deleted successfully"}
 
-@app.get("/classes/{class_id}/waitlistposition/")
+@app.get("/waitlist/{class_id}/position/")
 def get_current_waitlist_position(
     class_id:int,
     student_id: int = Header(
@@ -394,6 +405,9 @@ def get_current_waitlist_position(
 
     Returns:
     - dict: A dictionary containing the details of the classes
+
+    Raises:
+    - HTTPException (404): If record not found
     """
     try:
         result = db.execute(
@@ -407,8 +421,14 @@ def get_current_waitlist_position(
                                             student_id=?)
             ;
             """, [class_id, class_id, student_id]
-        )
-        return {"position": result.fetchone()[0]}
+        ).fetchone()
+
+        if result[0] == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Record Not Found"
+            )
+        return {"position": result[0]}
+        
     except sqlite3.IntegrityError as e:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -461,6 +481,9 @@ def get_current_enrollment(class_id: int,
               db: sqlite3.Connection = Depends(get_db)):
     """
     Retreive current enrollment for the classes.
+
+    Parameters:
+    - class_id (int): The ID of the class.
 
     Returns:
     - dict: A dictionary containing the details of the classes
@@ -525,6 +548,10 @@ def get_droplist(class_id: int,
     """
     Retreive students who have dropped the class.
 
+    Parameters:
+    - class_id (int): The ID of the class.
+    - instructor_id (int, In the header): A unique ID for students, instructors, and registrars.
+    
     Returns:
     - dict: A dictionary containing the details of the classes
     """
