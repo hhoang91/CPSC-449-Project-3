@@ -4,7 +4,7 @@ BEGIN TRANSACTION;
 DROP TABLE IF EXISTS user;
 CREATE TABLE user (
     id INTEGER PRIMARY KEY,
-    username TEXT NOT NULL,
+    username TEXT NOT NULL UNIQUE,
     hashed_password TEXT NOT NULL,
     first_name TEXT NOT NULL,
     last_name TEXT NOT NULL
@@ -13,7 +13,7 @@ CREATE TABLE user (
 DROP TABLE IF EXISTS roles;
 CREATE TABLE roles (
     id INTEGER PRIMARY KEY,
-    role_name TEXT NOT NULL
+    role_name TEXT NOT NULL UNIQUE
 );
 
 DROP TABLE IF EXISTS user_role;

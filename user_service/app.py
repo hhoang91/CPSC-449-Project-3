@@ -32,7 +32,7 @@ class UserRegisterModel(BaseModel):
     password: str
     first_name: str
     last_name: str
-    roles: list[int]
+    roles: list[str]
 
 class UserLoginModel(BaseModel):
     username: str
@@ -44,6 +44,7 @@ app = FastAPI()
 def get_db():
     with contextlib.closing(sqlite3.connect(settings.database)) as db:
         db.row_factory = sqlite3.Row
+        db.execute("PRAGMA foreign_keys=ON")
         yield db
 
 
@@ -109,13 +110,29 @@ def register_new_user(usermodel: UserRegisterModel, db: sqlite3.Connection = Dep
         cursor = db.cursor()
         cursor.execute("INSERT INTO user(id, username, hashed_password, first_name, last_name) VALUES (?, ?, ?, ?, ?)",
                        [usermodel.id, usermodel.username, hashed_password, usermodel.first_name, usermodel.last_name])
-        data = []
-        for i in range(len(usermodel.roles)):
-            data.append((usermodel.id, usermodel.roles[i]))
+        # data = []
+        # for i in range(len(usermodel.roles)):
+        #     data.append((usermodel.id, usermodel.roles[i]))
         
-        cursor.executemany("INSERT INTO user_role(user_id, role_id) VALUES (?, ?)", data)
+        # cursor.executemany("INSERT INTO user_role(user_id, role_id) VALUES (?, ?)", data)
+        
+        placeholder_string = ','.join(['?'] * len(usermodel.roles))
+        data = [usermodel.id] + usermodel.roles
+        
+        cursor.execute(
+            f"""
+            INSERT INTO user_role(user_id, role_id) 
+                SELECT ? AS user_id, id AS role_id
+                FROM roles
+                WHERE role_name IN ({placeholder_string})
+            """, data)
+        
         db.commit()
         return {"message": "User registration successful"}
+
+    except sqlite3.IntegrityError as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
+                            detail="Conflicts")
     except Exception as e:
         #logger.exception("An error occurred during user registration")
         raise HTTPException(status_code=500, detail="User registration failed")
