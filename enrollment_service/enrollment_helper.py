@@ -16,7 +16,7 @@ def is_auto_enroll_enabled(db: sqlite3.Connection):
     result = cursor.fetchone()
     return result[0] == 1
 
-def get_opening_classes(db: sqlite3.Connection):
+def get_available_classes(db: sqlite3.Connection):
     """
     Get classes which have available seats
 
@@ -31,8 +31,8 @@ def get_opening_classes(db: sqlite3.Connection):
         """
         SELECT id 
         FROM class 
-        WHERE DATE('now') <= date(course_start_date, '+14 days') AND
-            room_capacity > (SELECT COUNT(student_id)
+        WHERE course_start_date >= datetime('now', '-14 days')
+            AND room_capacity > (SELECT COUNT(student_id)
                             FROM enrollment
                             WHERE class_id = id
                             )

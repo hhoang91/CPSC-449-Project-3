@@ -2,7 +2,7 @@ from typing import Annotated
 import sqlite3
 import contextlib
 from fastapi import FastAPI, Depends, Response, HTTPException, Header, Body, status
-from .enrollment_helper import enroll_students_from_waitlist, is_auto_enroll_enabled, get_opening_classes
+from .enrollment_helper import enroll_students_from_waitlist, is_auto_enroll_enabled, get_available_classes
 from .models import Settings, Course, ClassCreate, ClassPatch, Student, Enrollment, Instructor
 
 settings = Settings()
@@ -37,7 +37,7 @@ def set_auto_enrollment(enabled: Annotated[bool, Body(embed=True)], db: sqlite3.
         db.commit()
 
         if enabled:
-            opening_classes = get_opening_classes(db)
+            opening_classes = get_available_classes(db)
             enroll_students_from_waitlist(db, opening_classes)
 
     except sqlite3.IntegrityError as e:
@@ -236,23 +236,23 @@ def get_available_classes(db: sqlite3.Connection = Depends(get_db)):
     try:
         classes = db.execute(
             """
-            SELECT s.*
-            FROM "class" as s
-            WHERE datetime('now') BETWEEN s.enrollment_start AND s.enrollment_end 
+            SELECT c.*
+            FROM "class" as c
+            WHERE datetime('now') BETWEEN c.enrollment_start AND c.enrollment_end 
                 AND (
-                        (s.room_capacity > 
+                        (c.room_capacity > 
                             (SELECT COUNT(enrollment.student_id)
                             FROM enrollment
-                            WHERE class_id=s.id) > 0) 
+                            WHERE class_id=c.id) > 0) 
                         OR ((SELECT COUNT(waitlist.student_id)
                             FROM waitlist
-                            WHERE class_id=s.id) < ?)
+                            WHERE class_id=c.id) < ?)
                     );
             """, [WAITLIST_CAPACITY]
         )
-    except sqlite3.IntegrityError as e:
+    except sqlite3.Error as e:
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"type": type(e).__name__, "msg": str(e)},
         )
     finally:
@@ -429,9 +429,9 @@ def get_current_waitlist_position(
             )
         return {"position": result[0]}
         
-    except sqlite3.IntegrityError as e:
+    except sqlite3.Error as e:
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"type": type(e).__name__, "msg": str(e)},
         )
 
@@ -498,9 +498,9 @@ def get_current_enrollment(class_id: int,
             WHERE sec.id=? AND sec.instructor_id=?
             """, [class_id, instructor_id]
         )
-    except sqlite3.IntegrityError as e:
+    except sqlite3.Error as e:
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"type": type(e).__name__, "msg": str(e)},
         )
     finally:
@@ -532,9 +532,9 @@ def get_waitlist(
             ORDER BY w.waitlist_date ASC
             """, [class_id, instructor_id]
         )
-    except sqlite3.IntegrityError as e:
+    except sqlite3.Error as e:
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"type": type(e).__name__, "msg": str(e)},
         )
     finally:
@@ -559,15 +559,15 @@ def get_droplist(class_id: int,
         result = db.execute(
             """
             SELECT stu.* 
-            FROM class sec
-                INNER JOIN droplist d ON sec.id = d.class_id
+            FROM class c
+                INNER JOIN droplist d ON c.id = d.class_id
                 INNER JOIN student stu ON d.student_id = stu.id 
-            WHERE sec.id=? AND sec.instructor_id=?
+            WHERE c.id=? AND c.instructor_id=?
             """, [class_id, instructor_id]
         )
     except sqlite3.IntegrityError as e:
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"type": type(e).__name__, "msg": str(e)},
         )
     finally:
