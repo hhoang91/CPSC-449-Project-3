@@ -29,12 +29,13 @@ run `sh ./bin/install.sh`.
 
 
 #### For students
-| Method | Route                        | Description                               |
-|--------|------------------------------|-------------------------------------------|
-|GET     | /api/classes/available/      | Retreive all available classes.           |
-|POST    | /api/enrollment/             | Student enrolls in a class.              	|
-|DELETE  | /api/enrollment/{class_id}   | Students drop themselves from a class.    |
-|DELETE  | /api/waitlist/{class_id}   	| Students remove themselves from a waitlist.|
+| Method | Route                                | Description                                |
+|--------|--------------------------------------|--------------------------------------------|
+|GET     | /api/classes/available/              | Retreive all available classes.            |
+|GET     | /api/waitlist/{class_id}/position/   | Get current waitlist position.             |
+|POST    | /api/enrollment/                     | Student enrolls in a class.                |
+|DELETE  | /api/enrollment/{class_id}           | Students drop themselves from a class.     |
+|DELETE  | /api/waitlist/{class_id}             | Students remove themselves from a waitlist.|
 
 #### For instructors
 | Method | Route                                | Description                               |
