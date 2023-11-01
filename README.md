@@ -17,6 +17,11 @@ run `sh ./bin/install.sh`.
 <img src="https://github.com/NLTN/Assets/blob/main/StudentEnrollment/EnrollmentERDiagram.png?raw=true">
 
 ## API Gateway endpoints
+#### For User Service
+| Method | Route            | Description                   |
+|--------|------------------|-------------------------------|
+|POST    | /api/register/	| Register a new user account.	|
+|POST    | /api/login/		| User login.                   |
 
 #### For registras
 | Method | Route                    | Description                               |
