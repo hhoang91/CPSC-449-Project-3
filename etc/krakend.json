@@ -291,12 +291,12 @@
     },
     {
       "_comment": "Student 4: View current waitlist position",
-      "endpoint": "/api/classes/{class_id}/waitlistposition/",
+      "endpoint": "/api/waitlist/{class_id}/position/",
       "method": "GET",
       "input_headers": ["x-cwid"],
       "backend": [
         {
-          "url_pattern": "/classes/{class_id}/waitlistposition/",
+          "url_pattern": "/waitlist/{class_id}/position/",
           "host": [
             "http://localhost:5100",
             "http://localhost:5101",
@@ -386,7 +386,39 @@
       }
     },
     {
-      "_comment": "Instructor 2: Retreive students who have dropped the class.",
+      "_comment": "Instructor 2: etreive current waiting list for the class.",
+      "endpoint": "/api/classes/{class_id}/waitlist/",
+      "method": "GET",
+      "input_headers": ["x-cwid"],
+      "backend": [
+        {
+          "url_pattern": "/classes/{class_id}/waitlist/",
+          "host": [
+            "http://localhost:5100",
+            "http://localhost:5101",
+            "http://localhost:5102"
+          ],
+          "extra_config": {
+            "backend/http": {
+              "return_error_details": "backend_b"
+            }
+          }
+        }
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "RS256",
+          "roles_key": "roles",
+          "roles": ["Instructor"],
+          "jwk_local_path": "./etc/public_key.json",
+          "disable_jwk_security": true,
+          "operation_debug": true,
+          "propagate_claims": [["jti", "x-cwid"]]
+        }
+      }
+    },
+    {
+      "_comment": "Instructor 3: Retreive students who have dropped the class.",
       "endpoint": "/api/classes/{class_id}/droplist/",
       "method": "GET",
       "input_headers": ["x-cwid"],
@@ -418,7 +450,7 @@
       }
     },
     {
-      "_comment": "Instructor 3: Drop students administratively.",
+      "_comment": "Instructor 4: Drop students administratively.",
       "endpoint": "/api/enrollment/{class_id}/{student_id}/administratively/",
       "method": "DELETE",
       "input_headers": ["x-cwid"],
