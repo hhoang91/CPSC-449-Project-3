@@ -2,7 +2,7 @@ from typing import Annotated
 import sqlite3
 import contextlib
 from fastapi import FastAPI, Depends, Response, HTTPException, Header, Body, status
-from .enrollment_helper import enroll_students_from_waitlist, is_auto_enroll_enabled, get_available_classes
+from .enrollment_helper import enroll_students_from_waitlist, is_auto_enroll_enabled, get_available_classes_within_first_2weeks
 from .models import Settings, Course, ClassCreate, ClassPatch, Student, Enrollment, Instructor
 
 settings = Settings()
@@ -38,7 +38,7 @@ def set_auto_enrollment(enabled: Annotated[bool, Body(embed=True)], db: sqlite3.
         db.commit()
 
         if enabled:
-            opening_classes = get_available_classes(db)
+            opening_classes = get_available_classes_within_first_2weeks(db)
             enroll_students_from_waitlist(db, opening_classes)
 
     except sqlite3.IntegrityError as e:

@@ -16,7 +16,7 @@ def is_auto_enroll_enabled(db: sqlite3.Connection):
     result = cursor.fetchone()
     return result[0] == 1
 
-def get_available_classes(db: sqlite3.Connection):
+def get_available_classes_within_first_2weeks(db: sqlite3.Connection):
     """
     Get classes which have available seats
 
