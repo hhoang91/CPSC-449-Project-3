@@ -9,6 +9,7 @@ settings = Settings()
 app = FastAPI()
 
 WAITLIST_CAPACITY = 15
+MAX_NUMBER_OF_WAITLISTS_PER_STUDENT = 3
 
 def get_db():
     with contextlib.closing(sqlite3.connect(settings.database)) as db:
@@ -307,24 +308,42 @@ def enroll(class_id: Annotated[int, Body(embed=True)],
             """, [student_id, first_name, last_name])
 
         if class_info["available_seats"] <= 0:
-            # ----- INSERT INTO WAITLIST TABLE -----
+            # CHECK THE WAITING LIST CONDITIONS
+            #   1. students may not be on more than 3 waiting lists
+            #   2. Waitlist capacity limit
+
             result = db.execute(
                 """
-                SELECT COUNT(student_id) 
-                FROM waitlist 
-                WHERE class_id = ?
-                """, [class_id]).fetchone()
+                SELECT * 
+                FROM 
+                    (
+                        SELECT COUNT(class_id) AS num_waitlists_student_is_on 
+                        FROM waitlist 
+                        WHERE student_id = ?
+                    ), 
+                    (
+                        SELECT COUNT(student_id) AS num_students_on_this_waitlist 
+                        FROM waitlist 
+                        WHERE class_id = ?
+                    );
+                """, [student_id, class_id]).fetchone()
 
-            if int(result[0]) >= WAITLIST_CAPACITY:
+            if int(result["num_waitlists_student_is_on"]) >= MAX_NUMBER_OF_WAITLISTS_PER_STUDENT:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST, 
+                    detail=f"Cannot exceed {MAX_NUMBER_OF_WAITLISTS_PER_STUDENT} waitlists limit")
+            
+            if int(result["num_students_on_this_waitlist"]) >= WAITLIST_CAPACITY:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST, detail="No open seats and the waitlist is also full")
-            else:
-                db.execute(
-                    """
-                    INSERT INTO waitlist(class_id, student_id, waitlist_date) 
-                    VALUES(?, ?, datetime('now'))
-                    """, [class_id, student_id]
-                )
+            
+            # PASS THE CONDITIONS. LET'S ADD STUDENT TO WAITLIST
+            db.execute(
+                """
+                INSERT INTO waitlist(class_id, student_id, waitlist_date) 
+                VALUES(?, ?, datetime('now'))
+                """, [class_id, student_id]
+            )
         else:
             # ----- INSERT INTO ENROLLMENT TABLE -----
             db.execute(
