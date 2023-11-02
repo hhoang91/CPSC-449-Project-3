@@ -4,9 +4,12 @@ import contextlib
 from fastapi import FastAPI, Depends, Response, HTTPException, Header, Body, status
 from .enrollment_helper import enroll_students_from_waitlist, is_auto_enroll_enabled, get_available_classes
 from .models import Settings, Course, ClassCreate, ClassPatch, Student, Enrollment, Instructor
+import logging
 
 settings = Settings()
 app = FastAPI()
+
+logging.basicConfig(filename=f'{__name__}.log', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG)
 
 WAITLIST_CAPACITY = 15
 MAX_NUMBER_OF_WAITLISTS_PER_STUDENT = 3
@@ -15,6 +18,7 @@ def get_db():
     with contextlib.closing(sqlite3.connect(settings.database)) as db:
         db.row_factory = sqlite3.Row
         db.execute("PRAGMA foreign_keys=ON")
+        #db.set_trace_callback(logging.debug)
         yield db
 
 ############### ENDPOINTS FOR REGISTRAS ################
