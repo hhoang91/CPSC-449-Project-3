@@ -1,13 +1,19 @@
 # Student Enrollment
 A back-end Web Service to manage course enrollment and waiting lists with functionality similar to TitanOnline.
 
-## Installation
-run `sh ./bin/install.sh`.
+### Prerequisites
+Operating system: Debian-based Linux (Ubuntu, Kali Linux, etc.) 
 
-## How to run
-- run `sh run.sh` to start the services.
-- run `sh ./bin/create-user-db.sh` to create user database.
-- run `sh ./bin/create-enrollment-db.sh` to create enrollment service database.
+### Installation
+Run `sh ./bin/install.sh`.
+
+### How to run
+- Run `sh run.sh` to start the services.
+- Run `sh ./bin/create-user-db.sh` to create user database.
+- Run `sh ./bin/create-enrollment-db.sh` to create enrollment service database.
+
+## Microservice Diagram
+<img src="https://raw.githubusercontent.com/NLTN/Assets/main/StudentEnrollment/APIGateway.svg" height="230">
 
 ## Database ER Diagram
 #### User Service
