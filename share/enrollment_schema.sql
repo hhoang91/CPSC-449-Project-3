@@ -19,8 +19,6 @@ CREATE TABLE instructor (
 	last_name TEXT NOT NULL
 );
 
-CREATE INDEX idx_class_instructor ON class(instructor_id);
-
 DROP TABLE IF EXISTS student;
 CREATE TABLE student (
 	id INTEGER PRIMARY KEY,
@@ -57,6 +55,7 @@ CREATE INDEX idx_room_capacity ON class (room_capacity);
 CREATE INDEX idx_course_start_date ON class (course_start_date);
 CREATE INDEX idx_enrollment_start ON class (enrollment_start);
 CREATE INDEX idx_enrollment_end ON class (enrollment_end);
+CREATE INDEX idx_class_instructor ON class(instructor_id);
 
 DROP TABLE IF EXISTS enrollment;
 CREATE TABLE enrollment (
