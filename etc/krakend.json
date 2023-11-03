@@ -42,7 +42,7 @@
       ]
     },
     {
-      "_comment": "Registra 1: Set auto enrollment",
+      "_comment": "Registrar 1: Set auto enrollment",
       "endpoint": "/api/auto-enrollment/",
       "method": "PUT",
       "backend": [
@@ -64,7 +64,7 @@
         "auth/validator": {
           "alg": "RS256",
           "roles_key": "roles",
-          "roles": ["Registra"],
+          "roles": ["Registrar"],
           "jwk_local_path": "./etc/public_key.json",
           "disable_jwk_security": true,
           "operation_debug": true
@@ -72,7 +72,7 @@
       }
     },
     {
-      "_comment": "Registra 2: Creates a new course with the provided details.",
+      "_comment": "Registrar 2: Creates a new course with the provided details.",
       "endpoint": "/api/courses/",
       "method": "POST",
       "backend": [
@@ -94,7 +94,7 @@
         "auth/validator": {
           "alg": "RS256",
           "roles_key": "roles",
-          "roles": ["Registra"],
+          "roles": ["Registrar"],
           "jwk_local_path": "./etc/public_key.json",
           "disable_jwk_security": true,
           "operation_debug": true
@@ -102,7 +102,7 @@
       }
     },
     {
-      "_comment": "Registra 3: Creates a new class.",
+      "_comment": "Registrar 3: Creates a new class.",
       "endpoint": "/api/classes/",
       "method": "POST",
       "backend": [
@@ -124,7 +124,7 @@
         "auth/validator": {
           "alg": "RS256",
           "roles_key": "roles",
-          "roles": ["Registra"],
+          "roles": ["Registrar"],
           "jwk_local_path": "./etc/public_key.json",
           "disable_jwk_security": true,
           "operation_debug": true
@@ -132,7 +132,7 @@
       }
     },
     {
-      "_comment": "Registra 4: Deletes a specific class.",
+      "_comment": "Registrar 4: Deletes a specific class.",
       "endpoint": "/api/classes/{id}",
       "method": "DELETE",
       "backend": [
@@ -154,7 +154,7 @@
         "auth/validator": {
           "alg": "RS256",
           "roles_key": "roles",
-          "roles": ["Registra"],
+          "roles": ["Registrar"],
           "jwk_local_path": "./etc/public_key.json",
           "disable_jwk_security": true,
           "operation_debug": true
@@ -162,7 +162,7 @@
       }
     },
     {
-      "_comment": "Registra 5: Updates specific details of a class.",
+      "_comment": "Registrar 5: Updates specific details of a class.",
       "endpoint": "/api/classes/{id}",
       "method": "PATCH",
       "backend": [
@@ -184,7 +184,7 @@
         "auth/validator": {
           "alg": "RS256",
           "roles_key": "roles",
-          "roles": ["Registra"],
+          "roles": ["Registrar"],
           "jwk_local_path": "./etc/public_key.json",
           "disable_jwk_security": true,
           "operation_debug": true

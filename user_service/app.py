@@ -163,14 +163,3 @@ def login(logindata: UserLoginModel, db: sqlite3.Connection = Depends(get_db)):
         #logger.exception("An error occurred during password verification")    
         #raise HTTPException(status_code=e.status_code, detail=str(e.detail)) 
         raise HTTPException(status_code=500, detail="User login failed")
-    
-    
-
-@app.get("/test/", description="User Login")
-def check_user_password(logindata: UserLoginModel, db: sqlite3.Connection = Depends(get_db)):
-    return {"message": "Password mismatch"}
-
-@app.get('/users/', description = 'View all users')
-def list_users(db:sqlite3.Connection = Depends(get_db)):
-    users = db.execute("SELECT * FROM user")
-    return {"users":users.fetchall()}

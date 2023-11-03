@@ -28,6 +28,6 @@ CREATE TABLE user_role (
 INSERT INTO roles (id, role_name) VALUES 
   (1, 'Student'),
   (2, 'Instructor'),
-  (3, 'Registra');
+  (3, 'Registrar');
   
 COMMIT;
