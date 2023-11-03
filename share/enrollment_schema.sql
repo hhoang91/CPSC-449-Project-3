@@ -55,6 +55,7 @@ CREATE INDEX idx_room_capacity ON class (room_capacity);
 CREATE INDEX idx_course_start_date ON class (course_start_date);
 CREATE INDEX idx_enrollment_start ON class (enrollment_start);
 CREATE INDEX idx_enrollment_end ON class (enrollment_end);
+CREATE INDEX idx_class_instructor ON class(instructor_id);
 
 DROP TABLE IF EXISTS enrollment;
 CREATE TABLE enrollment (
@@ -72,7 +73,7 @@ CREATE TABLE waitlist (
 	PRIMARY KEY(class_id, student_id)
 );
 
-CREATE INDEX idx_waitlist_date ON waitlist (waitlist_date);
+CREATE INDEX idx_waitlist_id_date ON waitlist(class_id, waitlist_date);
 
 DROP TABLE IF EXISTS droplist;
 CREATE TABLE droplist (
