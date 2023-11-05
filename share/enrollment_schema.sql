@@ -75,6 +75,7 @@ CREATE TABLE waitlist (
 );
 
 CREATE INDEX idx_waitlist_id_date ON waitlist(class_id, waitlist_date);
+CREATE INDEX idx_waitlist_id_student ON waitlist(student_id);
 
 DROP TABLE IF EXISTS droplist;
 CREATE TABLE droplist (
