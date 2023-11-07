@@ -51,7 +51,7 @@ def set_auto_enrollment(enabled: Annotated[bool, Body(embed=True)], db: sqlite3.
             detail={"type": type(e).__name__, "msg": str(e)},
         )
 
-    return {"detail ": f"Auto enrollment: {enabled}"}
+    return {"detail": f"Auto enrollment: {enabled}"}
 
 @app.post("/courses/", status_code=status.HTTP_201_CREATED)
 def create_course(
