@@ -1,22 +1,23 @@
 import os
 import unittest
 import requests
-from helper import user_register, user_login, unittest_setUp, unittest_tearDown
+from helper import *
 from settings import BASE_URL, USER_DB_PATH, ENROLLMENT_DB_PATH
 
 class AutoEnrollmentTest(unittest.TestCase):
     def setUp(self):
         unittest_setUp()
-    
+
     def tearDown(self):
         unittest_tearDown()
 
     def test_enable_auto_enrollment(self):
-        # 1. Register & Login
-        user_register("nathan", "1234", "nathan", "nguyen", ["Student", "Registrar"])
-        access_token = user_login(username="nathan", password="1234")
-        
-        # 2. Prepare header & message body        
+        # Register & Login
+        user_register("abc@csu.fullerton.edu", "1234", "nathan",
+                      "nguyen", ["Student", "Registrar"])
+        access_token = user_login("abc@csu.fullerton.edu", password="1234")
+
+        # Prepare header & message body
         headers = {
             "Content-Type": "application/json;",
             "Authorization": f"Bearer {access_token}"
@@ -25,20 +26,21 @@ class AutoEnrollmentTest(unittest.TestCase):
             "enabled": True
         }
 
-        # 3. Send request
+        # Send request
         url = f'{BASE_URL}/api/auto-enrollment/'
         response = requests.put(url, headers=headers, json=body)
-        
-        # 4. Asserts
+
+        # Assert
         self.assertEquals(response.status_code, 200)
         self.assertIn("detail", response.json())
 
     def test_disable_auto_enrollment(self):
-        # 1. Register & Login
-        user_register("nathan", "1234", "nathan", "nguyen", ["Student", "Registrar"])
-        access_token = user_login(username="nathan", password="1234")
-        
-        # 2. Prepare header & message body        
+        # Register & Login
+        user_register("abc@csu.fullerton.edu", "1234", "nathan",
+                      "nguyen", ["Student", "Registrar"])
+        access_token = user_login("abc@csu.fullerton.edu", password="1234")
+
+        # Prepare header & message body
         headers = {
             "Content-Type": "application/json;",
             "Authorization": f"Bearer {access_token}"
@@ -47,13 +49,111 @@ class AutoEnrollmentTest(unittest.TestCase):
             "enabled": False
         }
 
-        # 3. Send request
+        # Send request
         url = f'{BASE_URL}/api/auto-enrollment/'
         response = requests.put(url, headers=headers, json=body)
-        
-        # 4. Asserts
+
+        # Assert
         self.assertEquals(response.status_code, 200)
         self.assertIn("detail", response.json())
-     
+
+
+class CreateCourseTest(unittest.TestCase):
+    def setUp(self):
+        unittest_setUp()
+
+    def tearDown(self):
+        unittest_tearDown()
+
+    def test_create_course(self):
+        # Register & Login
+        user_register("abc@csu.fullerton.edu", "1234", "nathan",
+                      "nguyen", ["Student", "Registrar"])
+        access_token = user_login("abc@csu.fullerton.edu", password="1234")
+
+        # Prepare header & message body
+        headers = {
+            "Content-Type": "application/json;",
+            "Authorization": f"Bearer {access_token}"
+        }
+        body = {
+            "department_code": "CPSC",
+            "course_no": 999,
+            "title": "TEST TEST"
+        }
+
+        # Send request
+        url = f'{BASE_URL}/api/courses/'
+        response = requests.post(url, headers=headers, json=body)
+
+        # Assert
+        self.assertEquals(response.status_code, 200)
+        # self.assertIn("detail", response.json())
+
+    @unittest.expectedFailure
+    def test_create_duplicate_course(self):
+        # Register & Login
+        user_register("abc@csu.fullerton.edu", "1234", "nathan",
+                      "nguyen", ["Student", "Registrar"])
+        access_token = user_login("abc@csu.fullerton.edu", password="1234")
+
+        # Prepare header & message body
+        headers = {
+            "Content-Type": "application/json;",
+            "Authorization": f"Bearer {access_token}"
+        }
+        body = {
+            "department_code": "CPSC",
+            "course_no": 999,
+            "title": "TEST TEST"
+        }
+
+        # Send request
+        url = f'{BASE_URL}/api/courses/'
+        response = requests.post(url, headers=headers, json=body)
+        response = requests.post(url, headers=headers, json=body)
+
+        # Assert
+        self.assertNotEquals(response.status_code, 409)
+
+
+class CreateClassTest(unittest.TestCase):
+    def setUp(self):
+        unittest_setUp()
+
+    def tearDown(self):
+        unittest_tearDown()
+
+    def test_create_class(self):
+        # Register & Login
+        user_register("abc@csu.fullerton.edu", "1234", "nathan",
+                      "nguyen", ["Student", "Registrar"])
+        access_token = user_login("abc@csu.fullerton.edu", password="1234")
+
+        # Send request
+        response = create_class("CPSC", 999, 1, 2024, "FA", 1, 10,
+                                "2023-06-12", "2023-06-01 09:00:00", "2024-06-15 17:00:00", access_token)
+
+        # Assert
+        self.assertEquals(response.status_code, 200)
+
+    @unittest.expectedFailure
+    def test_create_duplicate_class(self):
+        # Register & Login
+        user_register("abc@csu.fullerton.edu", "1234", "nathan",
+                      "nguyen", ["Student", "Registrar"])
+        access_token = user_login("abc@csu.fullerton.edu", password="1234")
+
+        # Send request
+        response = create_class("CPSC", 999, 1, 2024, "FA", 1, 10,
+                                "2023-06-12", "2023-06-01 09:00:00", "2024-06-15 17:00:00", access_token)
+
+        response = create_class("CPSC", 999, 1, 2024, "FA", 1, 10,
+                                "2023-06-12", "2023-06-01 09:00:00", "2024-06-15 17:00:00", access_token)
+
+        # Assert
+        self.assertNotEquals(response.status_code, 409)
+
+
 if __name__ == '__main__':
     unittest.main()
