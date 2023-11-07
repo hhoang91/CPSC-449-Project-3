@@ -1,8 +1,8 @@
 import os
 import unittest
 import requests
-from .helpers import *
-from .settings import BASE_URL, USER_DB_PATH, ENROLLMENT_DB_PATH
+from tests.helpers import *
+from tests.settings import BASE_URL, USER_DB_PATH, ENROLLMENT_DB_PATH
 
 class AutoEnrollmentTest(unittest.TestCase):
     def setUp(self):
