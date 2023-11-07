@@ -13,7 +13,7 @@ class CurrentEnrollmentTest(unittest.TestCase):
 
     def test_get_current_enrollment_for_class(self):
         # Register & Login
-        user_register("abc@csu.fullerton.edu", "1234", "nathan",
+        user_register(2, "abc@csu.fullerton.edu", "1234", "nathan",
                       "nguyen", ["Instructor"])
         access_token = user_login("abc@csu.fullerton.edu", password="1234")
 
@@ -31,12 +31,12 @@ class CurrentEnrollmentTest(unittest.TestCase):
         response = requests.get(url, headers=headers)
 
         # Assert
-        self.assertEquals(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
         self.assertIn("students", response.json())
 
     def test_get_students_who_dropped_class(self):
         # Register & Login
-        user_register("abc@csu.fullerton.edu", "1234", "nathan",
+        user_register(2, "abc@csu.fullerton.edu", "1234", "nathan",
                       "nguyen", ["Instructor"])
         access_token = user_login("abc@csu.fullerton.edu", password="1234")
 
@@ -54,12 +54,12 @@ class CurrentEnrollmentTest(unittest.TestCase):
         response = requests.get(url, headers=headers)
 
         # Assert
-        self.assertEquals(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
         self.assertIn("students", response.json())
 
     def test_get_students_on_waitlist(self):
         # Register & Login
-        user_register("abc@csu.fullerton.edu", "1234", "nathan",
+        user_register(2, "abc@csu.fullerton.edu", "1234", "nathan",
                       "nguyen", ["Instructor"])
         access_token = user_login("abc@csu.fullerton.edu", password="1234")
 
@@ -77,12 +77,12 @@ class CurrentEnrollmentTest(unittest.TestCase):
         response = requests.get(url, headers=headers)
         
         # Assert
-        self.assertEquals(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
         self.assertIn("students", response.json())
 
     def test_drop_student_administratively(self):
         # Register & Login
-        user_register("abc@csu.fullerton.edu", "1234", "nathan",
+        user_register(2, "abc@csu.fullerton.edu", "1234", "nathan",
                       "nguyen", ["Instructor"])
         access_token = user_login("abc@csu.fullerton.edu", password="1234")
 
@@ -101,8 +101,8 @@ class CurrentEnrollmentTest(unittest.TestCase):
         response2 = requests.delete(url, headers=headers)
 
         # Assert
-        self.assertEquals(response1.status_code, 200)
-        self.assertEquals(response2.status_code, 404)
+        self.assertEqual(response1.status_code, 200)
+        self.assertEqual(response2.status_code, 404)
 
 
 if __name__ == '__main__':
