@@ -282,7 +282,7 @@ def enroll(class_id: Annotated[int, Body(embed=True)],
 
     Raises:
     - HTTPException (400): If there are no available seats.
-    - HTTPException (404): If the specified class or student does not exist.
+    - HTTPException (404): If the specified class does not exist.
     - HTTPException (409): If a conflict occurs (e.g., The student has already enrolled into the class).
     - HTTPException (500): If there is an internal server error.
     """
@@ -290,13 +290,13 @@ def enroll(class_id: Annotated[int, Body(embed=True)],
     try:
         class_info = db.execute(
             """
-            SELECT course_start_date, enrollment_start, enrollment_end, datetime('now') AS datetime_now, 
+            SELECT id, course_start_date, enrollment_start, enrollment_end, datetime('now') AS datetime_now, 
                     (room_capacity - COUNT(enrollment.class_id)) AS available_seats
             FROM class LEFT JOIN enrollment ON class.id = enrollment.class_id 
             WHERE class.id = ?;
             """, [class_id]).fetchone()
 
-        if not class_info:
+        if not class_info["id"]:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Class Not Found")
 
