@@ -3,3 +3,4 @@ uvicorn
 pydantic
 pydantic[email]
 jwcrypto==1.5.0
+requests

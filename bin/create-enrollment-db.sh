@@ -3,7 +3,7 @@
 SCHEMA_PATH="./share/enrollment_schema.sql"
 SAMPLE_DATA_PATH="./share/enrollment_sample_data.sql"
 DB_DIRECTORY="./var/"
-DB_FILENAME="enrollment.db"
+DB_FILENAME="enrollment_local.db"
 DB_PATH="$DB_DIRECTORY$DB_FILENAME"
 
 if test -f $DB_PATH; then

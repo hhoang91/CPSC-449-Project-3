@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings
 import logging.config
 
 class Settings():
-    database = "./var/enrollment.db"
+    database = "./var/enrollment_local.db"
     # logging_config: str
 
 class Instructor(BaseModel):

@@ -11,7 +11,7 @@
           "host": ["http://localhost:5200"],
           "extra_config": {
             "backend/http": {
-              "return_error_details": "backend_b"
+              "return_error_code": true
             }
           }
         }
@@ -35,7 +35,7 @@
           "host": ["http://localhost:5200"],
           "extra_config": {
             "backend/http": {
-              "return_error_details": "backend_b"
+              "return_error_code": true
             }
           }
         }
@@ -55,7 +55,7 @@
           ],
           "extra_config": {
             "backend/http": {
-              "return_error_details": "backend_b"
+              "return_error_code": true
             }
           }
         }
@@ -85,7 +85,7 @@
           ],
           "extra_config": {
             "backend/http": {
-              "return_error_details": "backend_b"
+              "return_error_code": true
             }
           }
         }
@@ -115,7 +115,7 @@
           ],
           "extra_config": {
             "backend/http": {
-              "return_error_details": "backend_b"
+              "return_error_code": true
             }
           }
         }
@@ -145,7 +145,7 @@
           ],
           "extra_config": {
             "backend/http": {
-              "return_error_details": "backend_b"
+              "return_error_code": true
             }
           }
         }
@@ -175,7 +175,7 @@
           ],
           "extra_config": {
             "backend/http": {
-              "return_error_details": "backend_b"
+              "return_error_code": true
             }
           }
         }
@@ -205,7 +205,7 @@
           ],
           "extra_config": {
             "backend/http": {
-              "return_error_details": "backend_b"
+              "return_error_code": true
             }
           }
         }
@@ -236,7 +236,7 @@
           ],
           "extra_config": {
             "backend/http": {
-              "return_error_details": "backend_b"
+              "return_error_code": true
             }
           }
         }
@@ -272,7 +272,7 @@
           ],
           "extra_config": {
             "backend/http": {
-              "return_error_details": "backend_b"
+              "return_error_code": true
             }
           }
         }
@@ -304,7 +304,7 @@
           ],
           "extra_config": {
             "backend/http": {
-              "return_error_details": "backend_b"
+              "return_error_code": true
             }
           }
         }
@@ -336,7 +336,7 @@
           ],
           "extra_config": {
             "backend/http": {
-              "return_error_details": "backend_b"
+              "return_error_code": true
             }
           }
         }
@@ -368,7 +368,7 @@
           ],
           "extra_config": {
             "backend/http": {
-              "return_error_details": "backend_b"
+              "return_error_code": true
             }
           }
         }
@@ -400,7 +400,7 @@
           ],
           "extra_config": {
             "backend/http": {
-              "return_error_details": "backend_b"
+              "return_error_code": true
             }
           }
         }
@@ -432,7 +432,7 @@
           ],
           "extra_config": {
             "backend/http": {
-              "return_error_details": "backend_b"
+              "return_error_code": true
             }
           }
         }
@@ -465,7 +465,7 @@
 
           "extra_config": {
             "backend/http": {
-              "return_error_details": "backend_b"
+              "return_error_code": true
             }
           }
         }
