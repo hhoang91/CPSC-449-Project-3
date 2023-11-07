@@ -1,7 +1,7 @@
 import unittest
 import requests
-from helpers import user_register, user_login, unittest_setUp, unittest_tearDown
-from settings import BASE_URL, USER_DB_PATH
+from .helpers import user_register, user_login, unittest_setUp, unittest_tearDown
+from .settings import BASE_URL, USER_DB_PATH
 
 class UserServiceTest(unittest.TestCase):
     def setUp(self):

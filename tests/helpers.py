@@ -1,6 +1,6 @@
 import os
 import requests
-from settings import *
+from .settings import *
 
 def unittest_setUp():
     if USING_LITEFS_TO_REPLICATE_USER_DATABASE:
