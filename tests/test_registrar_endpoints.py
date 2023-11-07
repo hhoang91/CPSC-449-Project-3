@@ -1,7 +1,7 @@
 import os
 import unittest
 import requests
-from helper import *
+from helpers import *
 from settings import BASE_URL, USER_DB_PATH, ENROLLMENT_DB_PATH
 
 class AutoEnrollmentTest(unittest.TestCase):
