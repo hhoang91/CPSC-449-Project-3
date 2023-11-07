@@ -3,6 +3,9 @@
 # Update package lists
 sudo apt update
 
+# Install SQLite3
+sudo apt install -y sqlite3
+
 # Install ruby-foreman
 sudo apt install -y ruby-foreman
 
