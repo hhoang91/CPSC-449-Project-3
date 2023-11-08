@@ -1,11 +1,8 @@
 import sqlite3
 import contextlib
-from .models import Settings
 # import logging
 
 # logging.basicConfig(filename=f'{__name__}.log', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG)
-
-settings = Settings()
 
 def get_db():
     with contextlib.closing(sqlite3.connect("./var/enrollment_local.db")) as db:
