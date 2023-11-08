@@ -33,19 +33,18 @@ def unittest_tearDown():
     os.system(f"rm -f {ENROLLMENT_DB_PATH}")
     os.system(f"[ ! -f {ENROLLMENT_DB_PATH}.backup ] || mv {ENROLLMENT_DB_PATH}.backup {ENROLLMENT_DB_PATH}")
 
-def user_register(username, password, first_name, last_name, roles: list[str]):
+def user_register(user_id, username, password, first_name, last_name, roles: list[str]):
     url = f'{BASE_URL}/api/register'
     myobj = {
-        "id": 2,
+        "id": user_id,
         "username": username,
         "password": password,
         "first_name": first_name,
         "last_name": last_name,
         "roles": roles
     }
-    res = requests.post(url, json = myobj)
-    data = res.json()
-    return "message" in data
+    response = requests.post(url, json = myobj)
+    return response.status_code == 201 or response.status_code == 200
 
 def user_login(username, password):
     url = f'{BASE_URL}/api/login'
@@ -53,36 +52,52 @@ def user_login(username, password):
         "username": username,
         "password": password
     }
-    res = requests.post(url, json = myobj)
-    data = res.json()
-    if "access_token" in data:
-        return data["access_token"]
+    response = requests.post(url, json = myobj)
+    if response.status_code == 200:
+        data = response.json()
+        if "access_token" in data:
+            return data["access_token"]
     
     return None
 
 def create_class(dept_code, course_num, section_no, academic_year, semester,
                 instructor_id, room_capacity, 
                 course_start_date, enrollment_start, enrollment_end, access_token):
-        # Prepare header & message body        
-        headers = {
-            "Content-Type": "application/json;",
-            "Authorization": f"Bearer {access_token}"
-        }
-        body = {
-            "dept_code": "SOC",
-            "course_num": 301,
-            "section_no": 2,
-            "academic_year": 2024,
-            "semester": "FA",
-            "instructor_id": 1,
-            "room_num": 205,
-            "room_capacity": 40,
-            "course_start_date": "2023-06-12",
-            "enrollment_start": "2023-06-01 09:00:00",
-            "enrollment_end": "2024-06-15 17:00:00"
-        }
+    # Prepare header & message body        
+    headers = {
+        "Content-Type": "application/json;",
+        "Authorization": f"Bearer {access_token}"
+    }
+    body = {
+        "dept_code": dept_code,
+        "course_num": course_num,
+        "section_no": section_no,
+        "academic_year": academic_year,
+        "semester": semester,
+        "instructor_id": instructor_id,
+        "room_num": 205,
+        "room_capacity": room_capacity,
+        "course_start_date": course_start_date,
+        "enrollment_start": enrollment_start,
+        "enrollment_end": enrollment_end
+    }
 
-        # Send request
-        url = f'{BASE_URL}/api/classes/'
-        response = requests.post(url, headers=headers, json=body)
-        return response
+    # Send request
+    url = f'{BASE_URL}/api/classes/'
+    response = requests.post(url, headers=headers, json=body)
+    return response
+
+def enroll_class(class_id, access_token):
+    # Prepare header & message body
+    headers = {
+        "Content-Type": "application/json;",
+        "Authorization": f"Bearer {access_token}"
+    }
+    body = {
+        "class_id": class_id
+    }
+
+    # Send request
+    url = f'{BASE_URL}/api/enrollment/'
+    response = requests.post(url, headers=headers, json=body)
+    return response

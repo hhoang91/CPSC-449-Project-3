@@ -13,7 +13,7 @@ class AutoEnrollmentTest(unittest.TestCase):
 
     def test_enable_auto_enrollment(self):
         # Register & Login
-        user_register("abc@csu.fullerton.edu", "1234", "nathan",
+        user_register(2, "abc@csu.fullerton.edu", "1234", "nathan",
                       "nguyen", ["Student", "Registrar"])
         access_token = user_login("abc@csu.fullerton.edu", password="1234")
 
@@ -31,12 +31,12 @@ class AutoEnrollmentTest(unittest.TestCase):
         response = requests.put(url, headers=headers, json=body)
 
         # Assert
-        self.assertEquals(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
         self.assertIn("detail", response.json())
 
     def test_disable_auto_enrollment(self):
         # Register & Login
-        user_register("abc@csu.fullerton.edu", "1234", "nathan",
+        user_register(2, "abc@csu.fullerton.edu", "1234", "nathan",
                       "nguyen", ["Student", "Registrar"])
         access_token = user_login("abc@csu.fullerton.edu", password="1234")
 
@@ -54,7 +54,7 @@ class AutoEnrollmentTest(unittest.TestCase):
         response = requests.put(url, headers=headers, json=body)
 
         # Assert
-        self.assertEquals(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
         self.assertIn("detail", response.json())
 
 
@@ -67,7 +67,7 @@ class CreateCourseTest(unittest.TestCase):
 
     def test_create_course(self):
         # Register & Login
-        user_register("abc@csu.fullerton.edu", "1234", "nathan",
+        user_register(2, "abc@csu.fullerton.edu", "1234", "nathan",
                       "nguyen", ["Student", "Registrar"])
         access_token = user_login("abc@csu.fullerton.edu", password="1234")
 
@@ -87,13 +87,12 @@ class CreateCourseTest(unittest.TestCase):
         response = requests.post(url, headers=headers, json=body)
 
         # Assert
-        self.assertEquals(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
         # self.assertIn("detail", response.json())
 
-    @unittest.expectedFailure
     def test_create_duplicate_course(self):
         # Register & Login
-        user_register("abc@csu.fullerton.edu", "1234", "nathan",
+        user_register(2, "abc@csu.fullerton.edu", "1234", "nathan",
                       "nguyen", ["Student", "Registrar"])
         access_token = user_login("abc@csu.fullerton.edu", password="1234")
 
@@ -114,7 +113,7 @@ class CreateCourseTest(unittest.TestCase):
         response = requests.post(url, headers=headers, json=body)
 
         # Assert
-        self.assertNotEquals(response.status_code, 409)
+        self.assertEqual(response.status_code, 409)
 
 
 class CreateClassTest(unittest.TestCase):
@@ -126,42 +125,41 @@ class CreateClassTest(unittest.TestCase):
 
     def test_create_class(self):
         # Register & Login
-        user_register("abc@csu.fullerton.edu", "1234", "nathan",
+        user_register(2, "abc@csu.fullerton.edu", "1234", "nathan",
                       "nguyen", ["Student", "Registrar"])
         access_token = user_login("abc@csu.fullerton.edu", password="1234")
 
         # Send request
-        response = create_class("CPSC", 999, 1, 2024, "FA", 1, 10,
+        response = create_class("SOC", 301, 2, 2024, "FA", 1, 10,
                                 "2023-06-12", "2023-06-01 09:00:00", "2024-06-15 17:00:00", access_token)
 
         # Assert
-        self.assertEquals(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
 
-    @unittest.expectedFailure
     def test_create_duplicate_class(self):
         # Register & Login
-        user_register("abc@csu.fullerton.edu", "1234", "nathan",
+        user_register(2, "abc@csu.fullerton.edu", "1234", "nathan",
                       "nguyen", ["Student", "Registrar"])
         access_token = user_login("abc@csu.fullerton.edu", password="1234")
 
         # Send request
-        response = create_class("CPSC", 999, 1, 2024, "FA", 1, 10,
+        response = create_class("SOC", 301, 2, 2024, "FA", 1, 10,
                                 "2023-06-12", "2023-06-01 09:00:00", "2024-06-15 17:00:00", access_token)
 
-        response = create_class("CPSC", 999, 1, 2024, "FA", 1, 10,
+        response = create_class("SOC", 301, 2, 2024, "FA", 1, 10,
                                 "2023-06-12", "2023-06-01 09:00:00", "2024-06-15 17:00:00", access_token)
 
         # Assert
-        self.assertNotEquals(response.status_code, 409)
+        self.assertEqual(response.status_code, 409)
 
     def test_update_class(self):
         # Register & Login
-        user_register("abc@csu.fullerton.edu", "1234", "nathan",
+        user_register(2, "abc@csu.fullerton.edu", "1234", "nathan",
                       "nguyen", ["Student", "Registrar"])
         access_token = user_login("abc@csu.fullerton.edu", password="1234")
 
         # Create a class
-        response = create_class("CPSC", 999, 1, 2024, "FA", 1, 10,
+        response = create_class("SOC", 301, 2, 2024, "FA", 1, 10,
                                 "2023-06-12", "2023-06-01 09:00:00", "2024-06-15 17:00:00", access_token)
 
         inserted_id = response.json()["inserted_id"]
@@ -180,16 +178,16 @@ class CreateClassTest(unittest.TestCase):
         response = requests.patch(url, headers=headers, json=body)
 
         # Assert
-        self.assertEquals(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
 
     def test_delete_class(self):
         # Register & Login
-        user_register("abc@csu.fullerton.edu", "1234", "nathan",
+        user_register(2, "abc@csu.fullerton.edu", "1234", "nathan",
                       "nguyen", ["Student", "Registrar"])
         access_token = user_login("abc@csu.fullerton.edu", password="1234")
 
         # Send request
-        response = create_class("CPSC", 999, 1, 2024, "FA", 1, 10,
+        response = create_class("SOC", 301, 2, 2024, "FA", 1, 10,
                                 "2023-06-12", "2023-06-01 09:00:00", "2024-06-15 17:00:00", access_token)
         
         inserted_id = response.json()["inserted_id"]
@@ -205,12 +203,11 @@ class CreateClassTest(unittest.TestCase):
         response = requests.delete(url, headers=headers)
         
         # Assert
-        self.assertEquals(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
 
-    @unittest.expectedFailure
     def test_delete_noexisting_class(self):
         # Register & Login
-        user_register("abc@csu.fullerton.edu", "1234", "nathan",
+        user_register(2, "abc@csu.fullerton.edu", "1234", "nathan",
                       "nguyen", ["Student", "Registrar"])
         access_token = user_login("abc@csu.fullerton.edu", password="1234")
 
@@ -227,7 +224,7 @@ class CreateClassTest(unittest.TestCase):
         response = requests.delete(url, headers=headers)
         
         # Assert
-        self.assertNotEquals(response.status_code, 404)
+        self.assertEqual(response.status_code, 404)
 
 if __name__ == '__main__':
     unittest.main()
