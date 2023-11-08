@@ -1,9 +1,9 @@
 from typing import Annotated
 import sqlite3
 import contextlib
-from fastapi import FastAPI, Depends, Response, HTTPException, Header, Body, status, APIRouter
-from .enrollment_helper import enroll_students_from_waitlist, is_auto_enroll_enabled, get_available_classes_within_first_2weeks
-from .models import Settings, Course, ClassCreate, ClassPatch, Student, Enrollment, Instructor
+from fastapi import Depends, Response, HTTPException, Body, status, APIRouter
+from .enrollment_helper import enroll_students_from_waitlist, get_available_classes_within_first_2weeks
+from .models import Settings, Course, ClassCreate, ClassPatch
 import logging
 
 registrar_router = APIRouter()

@@ -10,7 +10,3 @@ app = FastAPI()
 app.include_router(instructor_router)
 app.include_router(student_router)
 app.include_router(registrar_router)
-
-
-
-
