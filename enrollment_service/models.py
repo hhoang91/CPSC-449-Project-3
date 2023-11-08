@@ -1,7 +1,7 @@
 from typing import Optional
 from pydantic import BaseModel
-from pydantic_settings import BaseSettings
-import logging.config
+# from pydantic_settings import BaseSettings
+# import logging.config
 
 class Settings():
     database = "./var/enrollment_local.db"

@@ -1,24 +1,10 @@
 # from typing import Annotated
 import sqlite3
-import contextlib
 from fastapi import Depends, HTTPException, Header, status, APIRouter
+from .db_connection import get_db
 from .enrollment_helper import enroll_students_from_waitlist, is_auto_enroll_enabled
-from .models import Settings
-import logging
 
 instructor_router = APIRouter()
-settings = Settings()
-
-logging.basicConfig(filename=f'{__name__}.log', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG)
-
-def get_db():
-    with contextlib.closing(sqlite3.connect(settings.database)) as db:
-        db.row_factory = sqlite3.Row
-        db.execute("PRAGMA foreign_keys=ON")
-        #db.set_trace_callback(logging.debug)
-        yield db
-
-############### ENDPOINTS FOR INSTRUCTORS ################
 
 @instructor_router.get("/classes/{class_id}/students")
 def get_current_enrollment(class_id: int,
