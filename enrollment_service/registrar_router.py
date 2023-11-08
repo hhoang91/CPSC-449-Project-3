@@ -1,24 +1,11 @@
 from typing import Annotated
 import sqlite3
-import contextlib
 from fastapi import Depends, Response, HTTPException, Body, status, APIRouter
+from .db_connection import get_db
 from .enrollment_helper import enroll_students_from_waitlist, get_available_classes_within_first_2weeks
-from .models import Settings, Course, ClassCreate, ClassPatch
-import logging
+from .models import Course, ClassCreate, ClassPatch
 
 registrar_router = APIRouter()
-settings = Settings()
-
-logging.basicConfig(filename=f'{__name__}.log', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG)
-
-def get_db():
-    with contextlib.closing(sqlite3.connect(settings.database)) as db:
-        db.row_factory = sqlite3.Row
-        db.execute("PRAGMA foreign_keys=ON")
-        #db.set_trace_callback(logging.debug)
-        yield db
-        
-############### ENDPOINTS FOR REGISTRAS ################
 
 @registrar_router.put("/auto-enrollment/")
 def set_auto_enrollment(enabled: Annotated[bool, Body(embed=True)], db: sqlite3.Connection = Depends(get_db)):
