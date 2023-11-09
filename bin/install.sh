@@ -50,6 +50,9 @@ aws configure set aws_secret_access_key "$AWS_SECRET_ACCESS_KEY"
 aws configure set default.region "$DEFAULT_REGION"
 aws configure set default.output "$DEFAULT_OUTPUT_FORMAT"
 
+# Install Java Runtime Environment
+sudo apt install --yes openjdk-19-jre-headless
+
 # Print 'Installation Successful'
 echo "\n\n"
 echo "*****************************************"
