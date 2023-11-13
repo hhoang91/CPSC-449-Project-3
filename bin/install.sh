@@ -35,6 +35,27 @@ sudo apt install -y python3-pip
 # Install required libaries for the project
 pip3 install -r requirements.txt
 
+# Install the aws cli
+sudo ./aws/install
+
+# Configure dummy credentials for DynamoDB local 
+AWS_ACCESS_KEY_ID="fakeMyKeyId"
+AWS_SECRET_ACCESS_KEY="fakeSecretAccessKey"
+DEFAULT_REGION="us-west-2"
+DEFAULT_OUTPUT_FORMAT="json"
+
+# Run 'aws configure'
+aws configure set aws_access_key_id "$AWS_ACCESS_KEY_ID"
+aws configure set aws_secret_access_key "$AWS_SECRET_ACCESS_KEY"
+aws configure set default.region "$DEFAULT_REGION"
+aws configure set default.output "$DEFAULT_OUTPUT_FORMAT"
+
+# Install Java Runtime Environment
+sudo apt install --yes openjdk-19-jre-headless
+
+# Install the AWS SDK for Python
+python -m pip install boto3
+
 # Print 'Installation Successful'
 echo "\n\n"
 echo "*****************************************"
