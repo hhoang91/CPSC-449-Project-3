@@ -5,3 +5,5 @@ dynamo_db: java -Djava.library.path=dynamodb_local_latest/DynamoDBLocal_lib -jar
 # user_service_primary: ./bin/litefs mount -config etc/primary.yml
 # user_service_secondary: ./bin/litefs mount -config etc/secondary.yml
 # user_service_tertiary: ./bin/litefs mount -config etc/tertiary.yml
+dynamodb: sh ./bin/start-dynamodb.sh
+redis: sh ./bin/start-redis-server.sh
