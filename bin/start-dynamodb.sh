@@ -25,6 +25,7 @@ aws configure set region $AWS_REGION_NAME
 java -D"java.library.path=./$DYNAMODB_LIBRARY_PATH/DynamoDBLocal_lib" \
     -jar $DYNAMODB_LIBRARY_PATH/DynamoDBLocal.jar \
     -disableTelemetry \
-    -dbPath "$DYNAMODB_DATABASE_PATH" 
+    -dbPath "$DYNAMODB_DATABASE_PATH" \
+    --port $PORT
     # -inMemory \
     # -help
