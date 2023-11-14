@@ -13,18 +13,11 @@ import hashlib
 import base64
 
 from fastapi import FastAPI, Depends, Response, HTTPException, status, Path
+from .db_connection import get_db
 from pydantic import BaseModel
 from pydantic_settings import BaseSettings
 
-#logging.basicConfig(level=logging.INFO)
-#logger = logging.getLogger(__name__) 
-
-
 ALGORITHM = "pbkdf2_sha256"
-
-class Settings():
-    database = "./var/primary/fuse/user.db"
-    #logging_config: str #= "./etc/logging.ini"
 
 class UserRegisterModel(BaseModel):
     id: int
@@ -38,21 +31,8 @@ class UserLoginModel(BaseModel):
     username: str
     password: str    
 
-settings = Settings()
 app = FastAPI()    
-
-def get_db():
-    with contextlib.closing(sqlite3.connect(settings.database)) as db:
-        db.row_factory = sqlite3.Row
-        db.execute("PRAGMA foreign_keys=ON")
-        yield db
-
-
-def get_logger():
-    return logging.getLogger(__name__)
-
-#logging.config.fileConfig(settings.logging_config, disable_existing_loggers=False)    
-
+ 
 def hash_password(password, salt=None, iterations=260000):
     if salt is None:
         salt = secrets.token_hex(16)
