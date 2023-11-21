@@ -31,16 +31,6 @@ class Class:
                 AttributeDefinitions=[
                     {"AttributeName": "id", "AttributeType": "N"},
                     {"AttributeName": "dept_code", "AttributeType": "S"},
-                    {"AttributeName": "course_num", "AttributeType": "N"},
-                    {"AttributeName": "section_no", "AttributeType": "N"},
-                    {"AttributeName": "academic_year", "AttributeType": "N"},
-                    {"AttributeName": "semester", "AttributeType": "S"},
-                    {"AttributeName": "instructor_id", "AttributeType": "N"},
-                    {"AttributeName": "room_num", "AttributeType": "N"},
-                    {"AttributeName": "room_capacity", "AttributeType": "N"},
-                    {"AttributeName": "course_start_date", "AttributeType": "S"}, #Questionable
-                    {"AttributeName": "enrollment_start", "AttributeType": "S"},
-                    {"AttributeName": "enrollment_end", "AttributeType": "S"},
                 ],
                 ProvisionedThroughput={
                     "ReadCapacityUnits": 5,
@@ -59,25 +49,11 @@ class Class:
         else:
             return self.table
 
-# Create a Boto3 DynamoDB resource
-dynamodb_resource = boto3.resource(
-    'dynamodb',
-    aws_access_key_id='fakeMyKeyId',
-    aws_secret_access_key='fakeSecretAccessKey',
-    endpoint_url='http://localhost:5300'
-)
-
-# Instantiate the class class
-class_table_manager = Class(dynamodb_resource)
-
-
-if class_table_manager.table:
-    # The table exists, and you can perform operations on it
-    print("Table name:", class_table_manager.table.table_name)
-
-table_name = "class_table"  # Provide a suitable table name
-created_table = class_table_manager.create_table(table_name)
-
-if class_table_manager.table:
-    # The table exists, and you can perform operations on it
-    print("Table name:", class_table_manager.table.table_name)
+def create_class_instance():
+    dynamodb_resource = boto3.resource(
+        'dynamodb',
+        aws_access_key_id='fakeMyKeyId',
+        aws_secret_access_key='fakeSecretAccessKey',
+        endpoint_url='http://localhost:5300'
+    )
+    return Class(dynamodb_resource)

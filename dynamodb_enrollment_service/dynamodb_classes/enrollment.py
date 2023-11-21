@@ -30,8 +30,7 @@ class Enrollment:
                 ],
                 AttributeDefinitions=[
                     {"AttributeName": "class_id", "AttributeType": "N"},
-                    {"AttributeName": "student_id", "AttributeType": "N"},
-                    {"AttributeName": "waitlist_date", "AttributeType": "S"}
+                    {"AttributeName": "enrollment_date", "AttributeType": "S"}
                 ],
                 ProvisionedThroughput={
                     "ReadCapacityUnits": 5,
@@ -50,25 +49,11 @@ class Enrollment:
         else:
             return self.table
 
-# Create a Boto3 DynamoDB resource
-dynamodb_resource = boto3.resource(
-    'dynamodb',
-    aws_access_key_id='fakeMyKeyId',
-    aws_secret_access_key='fakeSecretAccessKey',
-    endpoint_url='http://localhost:5300'
-)
-
-# Instantiate the Enrollment class
-enrollment_table_manager = Enrollment(dynamodb_resource)
-
-
-if enrollment_table_manager.table:
-    # The table exists, and you can perform operations on it
-    print("Table name:", enrollment_table_manager.table.table_name)
-
-table_name = "enrollment_table"  # Provide a suitable table name
-created_table = enrollment_table_manager.create_table(table_name)
-
-if enrollment_table_manager.table:
-    # The table exists, and you can perform operations on it
-    print("Table name:", enrollment_table_manager.table.table_name)
+def create_enrollment_instance():
+    dynamodb_resource = boto3.resource(
+        'dynamodb',
+        aws_access_key_id='fakeMyKeyId',
+        aws_secret_access_key='fakeSecretAccessKey',
+        endpoint_url='http://localhost:5300'
+    )
+    return Enrollment(dynamodb_resource)

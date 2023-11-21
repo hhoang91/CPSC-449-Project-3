@@ -1,5 +1,7 @@
 #!/bin/sh
 
+sudo systemctl stop redis-server
+
 # Create .env file
 sh ./bin/create-dotenv.sh
 
