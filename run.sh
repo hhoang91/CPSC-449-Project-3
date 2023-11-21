@@ -1,5 +1,6 @@
 #!/bin/sh
 
+
 # Create .env file
 sh ./bin/create-dotenv.sh
 
