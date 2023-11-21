@@ -2,8 +2,7 @@ from typing import Annotated
 import boto3
 from fastapi import Depends, HTTPException, Header, Body, status, APIRouter
 from .db_connection import get_db
-from dynamodb_classes.classes import create_class_instance
-from dynamodb_classes.enrollment import create_enrollment_instance
+from ddb_enrollment_schema import *
 from boto3.dynamodb.conditions import Key
 WAITLIST_CAPACITY = 15
 MAX_NUMBER_OF_WAITLISTS_PER_STUDENT = 3
@@ -23,12 +22,10 @@ def get_current_enrollment(class_id: int,
     - dict: A dictionary containing the details of the classes
     """
     try:
-        enrollment_table_manager = create_enrollment_instance()
-        table_name = "enrollment_table"
-        enrollment_table_manager.table = enrollment_table_manager.dyn_resource.Table(table_name)
+        enrollment_table_instance = create_table_instance(Enrollment, "enrollment_table")
 
         # Perform a scan to retrieve all items
-        response = enrollment_table_manager.table.query(KeyConditionExpression=Key('class_id').eq(class_id))
+        response = enrollment_table_instance.table.query(KeyConditionExpression=Key('class_id').eq(class_id))
 
         # Extract the items from the response
         items = response.get('Items', [])
