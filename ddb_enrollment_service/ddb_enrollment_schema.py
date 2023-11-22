@@ -35,11 +35,9 @@ class Class:
                 TableName=table_name,
                 KeySchema=[
                     {"AttributeName": "id", "KeyType": "HASH"},  # Partition key
-                    {"AttributeName": "dept_code", "KeyType": "RANGE"} # Sort Key (Questionable choice)
                 ],
                 AttributeDefinitions=[
                     {"AttributeName": "id", "AttributeType": "N"},
-                    {"AttributeName": "dept_code", "AttributeType": "S"},
                 ],
                 ProvisionedThroughput={
                     "ReadCapacityUnits": 5,
@@ -88,11 +86,11 @@ class Enrollment:
                 TableName=table_name,
                 KeySchema=[
                     {"AttributeName": "class_id", "KeyType": "HASH"},  # Partition key
-                    {"AttributeName": "enrollment_date", "KeyType": "RANGE"} # Sort Key
+                    # {"AttributeName": "enrollment_date", "KeyType": "RANGE"} # Sort Key
                 ],
                 AttributeDefinitions=[
                     {"AttributeName": "class_id", "AttributeType": "N"},
-                    {"AttributeName": "enrollment_date", "AttributeType": "S"}
+                    # {"AttributeName": "enrollment_date", "AttributeType": "S"}
                 ],
                 ProvisionedThroughput={
                     "ReadCapacityUnits": 5,

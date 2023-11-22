@@ -1,5 +1,5 @@
 import boto3
-from ddb_enrollment_service.ddb_enrollment_schema import *
+from ddb_enrollment_schema import *
 
 
 class_table_instance = create_table_instance(Class, "class_table")
@@ -26,7 +26,7 @@ enrollment_table_instance = create_table_instance(Enrollment, "enrollment_table"
 items_to_insert = [
     {
         "class_id": 1,
-        "enrollment_date": "CPSC",
+        "enrollment_date": "2023-06-01 09:00:00",
         "student_id" : 1
     },
 ]
