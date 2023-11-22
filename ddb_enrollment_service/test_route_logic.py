@@ -81,3 +81,30 @@ from botocore.exceptions import ParamValidationError
 # for item in available_classes:
 #     print(item)
 
+##################
+#Enroll a student#
+##################
+class_id = 1
+class_table_instance = create_table_instance(Class, "class_table")
+enrollment_table_instance = create_table_instance(Enrollment, "enrollment_table")
+
+response = class_table_instance.query(KeyConditionExpression=Key('id').eq(class_id))
+class_item = response.get('Items', [])[0]
+room_capacity = class_item['room_capacity']
+enrollments = enrollment_table_instance.query(KeyConditionExpression=Key('class_id').eq(class_id))
+
+num_of_enrollments = len(enrollments.get('Items', []))
+if num_of_enrollments < room_capacity:
+    item_to_add = {
+        "class_id": 1,
+        "enrollment_date": "2023-06-01 09:00:00",
+        "student_id" : 2
+    }
+
+    enrollment_table_instance.put_item(Item=item_to_add)
+
+    print("Added item")
+    print(item_to_add)
+else:
+        print("No available seats in the class")
+
