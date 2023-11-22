@@ -86,11 +86,11 @@ class Enrollment:
                 TableName=table_name,
                 KeySchema=[
                     {"AttributeName": "class_id", "KeyType": "HASH"},  # Partition key
-                    # {"AttributeName": "enrollment_date", "KeyType": "RANGE"} # Sort Key
+                    {"AttributeName": "student_id", "KeyType": "RANGE"} # Sort Key
                 ],
                 AttributeDefinitions=[
                     {"AttributeName": "class_id", "AttributeType": "N"},
-                    # {"AttributeName": "enrollment_date", "AttributeType": "S"}
+                    {"AttributeName": "student_id", "AttributeType": "N"}
                 ],
                 ProvisionedThroughput={
                     "ReadCapacityUnits": 5,
