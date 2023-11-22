@@ -1,6 +1,7 @@
 import boto3
 from ddb_enrollment_schema import *
 from boto3.dynamodb.conditions import Key
+from botocore.exceptions import ParamValidationError
 
 
 ####################
@@ -37,6 +38,9 @@ from boto3.dynamodb.conditions import Key
 # for item in items:
 #     print(item)
 
+###########################
+#Get current enrollments#
+###########################
 
 
 # enrollment_table_instance = create_table_instance(Enrollment, "enrollment_table")
@@ -55,25 +59,25 @@ from boto3.dynamodb.conditions import Key
 #Get all available classes#
 ###########################
 
-available_classes = []
+# available_classes = []
 
-class_table_instance = create_table_instance(Class, "class_table")
-enrollment_table_instance = create_table_instance(Enrollment, "enrollment_table")
+# class_table_instance = create_table_instance(Class, "class_table")
+# enrollment_table_instance = create_table_instance(Enrollment, "enrollment_table")
 
-response = class_table_instance.scan()
+# response = class_table_instance.scan()
 
-items = response.get('Items', [])
+# items = response.get('Items', [])
 
-for item in items:
-    class_id = item['id']
-    room_capacity = item['room_capacity']
-    enrollments = enrollment_table_instance.query(KeyConditionExpression=Key('class_id').eq(class_id))
-    num_of_enrollments = len(enrollments.get('Items', []))
-    if num_of_enrollments < room_capacity:
-        available_classes.append(item)
+# for item in items:
+#     class_id = item['id']
+#     room_capacity = item['room_capacity']
+#     enrollments = enrollment_table_instance.query(KeyConditionExpression=Key('class_id').eq(class_id))
+#     num_of_enrollments = len(enrollments.get('Items', []))
+#     if num_of_enrollments < room_capacity:
+#         available_classes.append(item)
 
 
-# Print or process the items
-for item in available_classes:
-    print(item)
+# # Print or process the items
+# for item in available_classes:
+#     print(item)
 

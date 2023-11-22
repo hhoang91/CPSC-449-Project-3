@@ -57,7 +57,8 @@ def create_class(
 
         class_table_instance.put_item(Item=item_to_add)
 
-        return item_to_add
+        return {"added to class table": item_to_add}
+
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error creating class: {str(e)}")

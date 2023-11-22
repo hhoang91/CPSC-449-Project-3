@@ -32,6 +32,7 @@ def get_available_classes(db: boto3.resource = Depends(get_db)):
         for item in available_classes:
             print(item)
 
-        return items
+        return {"available_classes" : available_classes}
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving classes: {str(e)}")

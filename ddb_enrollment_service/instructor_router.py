@@ -24,17 +24,11 @@ def get_current_enrollment(class_id: int,
     try:
         enrollment_table_instance = create_table_instance(Enrollment, "enrollment_table")
 
-        # Perform a scan to retrieve all items
         response = enrollment_table_instance.table.query(KeyConditionExpression=Key('class_id').eq(class_id))
 
-        # Extract the items from the response
         items = response.get('Items', [])
 
-        # Print or process the items
-        for item in items:
-            print(item)
-
-        return items
+        return {"enrollments" : items}
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving enrollments: {str(e)}")
