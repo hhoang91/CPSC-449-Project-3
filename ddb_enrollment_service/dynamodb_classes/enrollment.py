@@ -26,11 +26,12 @@ class Enrollment:
                 TableName=table_name,
                 KeySchema=[
                     {"AttributeName": "class_id", "KeyType": "HASH"},  # Partition key
-                    {"AttributeName": "enrollment_date", "KeyType": "RANGE"} # Sort Key
+                    {"AttributeName": "student_id", "KeyType": "RANGE"} # Sort Key
                 ],
                 AttributeDefinitions=[
-                    {"AttributeName": "class_id", "AttributeType": "N"},
-                    {"AttributeName": "enrollment_date", "AttributeType": "S"}
+                    {"AttributeName": "class_id", "AttributeType": "S"},
+                    {"AttributeName": "student_id", "AttributeType": "S"}
+                    #{"AttributeName": "enrollment_date", "AttributeType": "S"}
                 ],
                 ProvisionedThroughput={
                     "ReadCapacityUnits": 5,
@@ -57,3 +58,21 @@ def create_enrollment_instance():
         endpoint_url='http://localhost:5300'
     )
     return Enrollment(dynamodb_resource)
+
+# Create a Boto3 DynamoDB resource
+dynamodb_resource = boto3.resource(
+    'dynamodb',
+    #aws_access_key_id='fakeMyKeyId',
+    #aws_secret_access_key='fakeSecretAccessKey',
+    endpoint_url='http://localhost:5300'
+)
+
+# Instantiate the Droplist class
+enrollment_table_manager = Enrollment(dynamodb_resource)
+
+table_name = "enrollment_table"  # Provide a suitable table name
+enrollment_table_manager.create_table(table_name)
+
+if enrollment_table_manager.table:
+    # The table exists, and you can perform operations on it
+    print("Table name:", enrollment_table_manager.table.table_name)

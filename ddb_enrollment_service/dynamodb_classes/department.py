@@ -25,12 +25,11 @@ class Department:
             self.table = self.dyn_resource.create_table(
                 TableName=table_name,
                 KeySchema=[
-                    {"AttributeName": "code", "KeyType": "HASH"},  # Partition key
-                    {"AttributeName": "dept_name", "KeyType": "RANGE"} # Sort Key
+                    {"AttributeName": "code", "KeyType": "HASH"}  # Partition key
                 ],
                 AttributeDefinitions=[
                     {"AttributeName": "code", "AttributeType": "S"},
-                    {"AttributeName": "dept_name", "AttributeType": "S"}
+                    #{"AttributeName": "department_name", "AttributeType": "S"}
                 ],
                 ProvisionedThroughput={
                     "ReadCapacityUnits": 5,
@@ -52,21 +51,16 @@ class Department:
 # Create a Boto3 DynamoDB resource
 dynamodb_resource = boto3.resource(
     'dynamodb',
-    aws_access_key_id='fakeMyKeyId',
-    aws_secret_access_key='fakeSecretAccessKey',
+    #aws_access_key_id='fakeMyKeyId',
+    #aws_secret_access_key='fakeSecretAccessKey',
     endpoint_url='http://localhost:5300'
 )
 
 # Instantiate the Department class
 department_table_manager = Department(dynamodb_resource)
 
-
-if department_table_manager.table:
-    # The table exists, and you can perform operations on it
-    print("Table name:", department_table_manager.table.table_name)
-
 table_name = "department_table"  # Provide a suitable table name
-created_table = department_table_manager.create_table(table_name)
+department_table_manager.create_table(table_name)
 
 if department_table_manager.table:
     # The table exists, and you can perform operations on it

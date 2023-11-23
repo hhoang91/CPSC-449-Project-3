@@ -25,10 +25,10 @@ class Configs:
             self.table = self.dyn_resource.create_table(
                 TableName=table_name,
                 KeySchema=[
-                    {"AttributeName": "automatic_enrollment", "KeyType": "HASH"},  # Partition key
+                    {"AttributeName": "variable_name", "KeyType": "HASH"},  # Partition key
                 ],
                 AttributeDefinitions=[
-                    {"AttributeName": "automatic_enrollment", "AttributeType": "BOOL"},
+                    {"AttributeName": "variable_name", "AttributeType": "S"},
                 ],
                 ProvisionedThroughput={
                     "ReadCapacityUnits": 5,
@@ -50,21 +50,16 @@ class Configs:
 # Create a Boto3 DynamoDB resource
 dynamodb_resource = boto3.resource(
     'dynamodb',
-    aws_access_key_id='fakeMyKeyId',
-    aws_secret_access_key='fakeSecretAccessKey',
+    #aws_access_key_id='fakeMyKeyId',
+    #aws_secret_access_key='fakeSecretAccessKey',
     endpoint_url='http://localhost:5300'
 )
 
 # Instantiate the Configs class
 configs_table_manager = Configs(dynamodb_resource)
 
-
-if configs_table_manager.table:
-    # The table exists, and you can perform operations on it
-    print("Table name:", configs_table_manager.table.table_name)
-
 table_name = "configs_table"  # Provide a suitable table name
-created_table = configs_table_manager.create_table(table_name)
+configs_table_manager.create_table(table_name)
 
 if configs_table_manager.table:
     # The table exists, and you can perform operations on it
