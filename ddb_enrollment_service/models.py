@@ -32,6 +32,7 @@ class ClassPatch(BaseModel):
     enrollment_end: Optional[str] = None
 
 class ClassCreate(BaseModel):
+    id: str
     dept_code: str
     course_num: int
     section_no: int
