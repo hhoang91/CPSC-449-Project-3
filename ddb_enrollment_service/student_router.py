@@ -5,6 +5,7 @@ from .db_connection import get_db
 from ddb_enrollment_schema import *
 from boto3.dynamodb.conditions import Key
 from datetime import datetime
+import redis
 WAITLIST_CAPACITY = 15
 MAX_NUMBER_OF_WAITLISTS_PER_STUDENT = 3
 
@@ -86,3 +87,34 @@ def enroll(class_id: Annotated[int, Body(embed=True)],
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving classes: {str(e)}")
+
+@student_router.get("/waitlist/{class_id}/position/")
+def get_current_waitlist_position(
+    class_id:int,
+    student_id: int = Header(
+        alias="x-cwid", description="A unique ID for students, instructors, and registrars")):
+    """
+    Retreive waitlist position
+
+    Returns:
+    - dict: A dictionary containing the user's waitlist position info
+
+    Raises:
+
+    """
+    try:
+        redis_conn = redis.Redis(decode_responses=True)
+        waitlist_key_to_check = f"waitlist_{class_id}"
+
+        waitlist_position = redis_conn.zrank(waitlist_key_to_check, f"{class_id}_{student_id}")
+
+        if waitlist_position is not None:
+            waitlist_position += 1
+            return {"class_id": class_id, "waitlist_position": waitlist_position}
+        else:
+            message = f"You are not in the waitlist for class {class_id}"
+            return {"class_id": class_id, "message": message}
+
+    except redis.exceptions.RedisError as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving waitlist position: {str(e)}")
+     

@@ -2,6 +2,7 @@ import boto3
 from ddb_enrollment_schema import *
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ParamValidationError
+import redis
 
 
 ####################
@@ -84,27 +85,44 @@ from botocore.exceptions import ParamValidationError
 ##################
 #Enroll a student#
 ##################
-class_id = 1
-class_table_instance = create_table_instance(Class, "class_table")
-enrollment_table_instance = create_table_instance(Enrollment, "enrollment_table")
+# class_id = 1
+# class_table_instance = create_table_instance(Class, "class_table")
+# enrollment_table_instance = create_table_instance(Enrollment, "enrollment_table")
 
-response = class_table_instance.query(KeyConditionExpression=Key('id').eq(class_id))
-class_item = response.get('Items', [])[0]
-room_capacity = class_item['room_capacity']
-enrollments = enrollment_table_instance.query(KeyConditionExpression=Key('class_id').eq(class_id))
+# response = class_table_instance.query(KeyConditionExpression=Key('id').eq(class_id))
+# class_item = response.get('Items', [])[0]
+# room_capacity = class_item['room_capacity']
+# enrollments = enrollment_table_instance.query(KeyConditionExpression=Key('class_id').eq(class_id))
 
-num_of_enrollments = len(enrollments.get('Items', []))
-if num_of_enrollments < room_capacity:
-    item_to_add = {
-        "class_id": 1,
-        "enrollment_date": "2023-06-01 09:00:00",
-        "student_id" : 2
-    }
+# num_of_enrollments = len(enrollments.get('Items', []))
+# if num_of_enrollments < room_capacity:
+#     item_to_add = {
+#         "class_id": 1,
+#         "enrollment_date": "2023-06-01 09:00:00",
+#         "student_id" : 2
+#     }
 
-    enrollment_table_instance.put_item(Item=item_to_add)
+#     enrollment_table_instance.put_item(Item=item_to_add)
 
-    print("Added item")
-    print(item_to_add)
+#     print("Added item")
+#     print(item_to_add)
+# else:
+#         print("No available seats in the class")
+
+#########################
+#Check waitlist position#
+#########################
+student_id = 73123456
+class_id = 2
+
+redis_conn = redis.Redis(decode_responses=True)
+waitlist_key_to_check = f"waitlist_{class_id}"
+# Get the rank of the member in the sorted set (0-based index)
+waitlist_position = redis_conn.zrank(waitlist_key_to_check, f"{class_id}_{student_id}")
+
+if waitlist_position is not None:
+    # Adding 1 to convert 0-based index to 1-based position
+    waitlist_position += 1
+    print (f"waitlist position : {waitlist_position}")
 else:
-        print("No available seats in the class")
-
+    print(f"You are not in the waitlist for class {class_id}")
