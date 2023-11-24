@@ -25,13 +25,12 @@ class Course:
             self.table = self.dyn_resource.create_table(
                 TableName=table_name,
                 KeySchema=[
-                    {"AttributeName": "course_no", "KeyType": "HASH"},  # Partition key
-                    {"AttributeName": "title", "KeyType": "RANGE"} # Sort Key
+                    {"AttributeName": "department_code", "KeyType": "HASH"},  # Partition key
+                    {"AttributeName": "course_no", "KeyType": "RANGE"} # Sort Key
                 ],
                 AttributeDefinitions=[
-                    {"AttributeName": "course_no", "AttributeType": "N"},
-                    {"AttributeName": "title", "AttributeType": "S"},
-                    {"AttributeName": "department_code", "AttributeType": "S"}
+                    {"AttributeName": "department_code", "AttributeType": "S"},
+                    {"AttributeName": "course_no", "AttributeType": "N"}
                 ],
                 ProvisionedThroughput={
                     "ReadCapacityUnits": 5,
@@ -53,18 +52,13 @@ class Course:
 # Create a Boto3 DynamoDB resource
 dynamodb_resource = boto3.resource(
     'dynamodb',
-    aws_access_key_id='fakeMyKeyId',
-    aws_secret_access_key='fakeSecretAccessKey',
+    #aws_access_key_id='fakeMyKeyId',
+    #aws_secret_access_key='fakeSecretAccessKey',
     endpoint_url='http://localhost:5300'
 )
 
 # Instantiate the Course class
 course_table_manager = Course(dynamodb_resource)
-
-
-if course_table_manager.table:
-    # The table exists, and you can perform operations on it
-    print("Table name:", course_table_manager.table.table_name)
 
 table_name = "course_table"  # Provide a suitable table name
 created_table = course_table_manager.create_table(table_name)

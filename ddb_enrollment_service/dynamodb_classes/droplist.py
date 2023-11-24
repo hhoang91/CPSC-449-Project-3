@@ -26,13 +26,13 @@ class Droplist:
                 TableName=table_name,
                 KeySchema=[
                     {"AttributeName": "class_id", "KeyType": "HASH"},  # Partition key
-                    {"AttributeName": "drop_date", "KeyType": "RANGE"} # Sort Key
+                    {"AttributeName": "student_id", "KeyType": "RANGE"} # Sort Key
                 ],
                 AttributeDefinitions=[
-                    {"AttributeName": "class_id", "AttributeType": "N"},
-                    {"AttributeName": "student_id", "AttributeType": "N"},
-                    {"AttributeName": "drop_date", "AttributeType": "S"},
-                    {"AttributeName": "administrative", "AttributeType": "BOOL"}
+                    {"AttributeName": "class_id", "AttributeType": "S"},
+                    {"AttributeName": "student_id", "AttributeType": "S"}
+                    #{"AttributeName": "drop_date", "AttributeType": "S"},
+                    #{"AttributeName": "administrative", "AttributeType": "BOOL"}
                 ],
                 ProvisionedThroughput={
                     "ReadCapacityUnits": 5,
@@ -54,21 +54,16 @@ class Droplist:
 # Create a Boto3 DynamoDB resource
 dynamodb_resource = boto3.resource(
     'dynamodb',
-    aws_access_key_id='fakeMyKeyId',
-    aws_secret_access_key='fakeSecretAccessKey',
+    #aws_access_key_id='fakeMyKeyId',
+    #aws_secret_access_key='fakeSecretAccessKey',
     endpoint_url='http://localhost:5300'
 )
 
 # Instantiate the Droplist class
 droplist_table_manager = Droplist(dynamodb_resource)
 
-
-if droplist_table_manager.table:
-    # The table exists, and you can perform operations on it
-    print("Table name:", droplist_table_manager.table.table_name)
-
 table_name = "droplist_table"  # Provide a suitable table name
-created_table = droplist_table_manager.create_table(table_name)
+droplist_table_manager.create_table(table_name)
 
 if droplist_table_manager.table:
     # The table exists, and you can perform operations on it

@@ -26,12 +26,12 @@ class Instructor:
                 TableName=table_name,
                 KeySchema=[
                     {"AttributeName": "id", "KeyType": "HASH"},  # Partition key
-                    {"AttributeName": "last_name", "KeyType": "RANGE"} # Sort Key
+                    #{"AttributeName": "last_name", "KeyType": "RANGE"} # Sort Key
                 ],
                 AttributeDefinitions=[
-                    {"AttributeName": "id", "AttributeType": "N"},
-                    {"AttributeName": "first_name", "AttributeType": "S"},
-                    {"AttributeName": "last_name", "AttributeType": "S"},
+                    {"AttributeName": "id", "AttributeType": "S"},
+                    #{"AttributeName": "first_name", "AttributeType": "S"},
+                    #{"AttributeName": "last_name", "AttributeType": "S"},
                 ],
                 ProvisionedThroughput={
                     "ReadCapacityUnits": 5,
@@ -53,21 +53,16 @@ class Instructor:
 # Create a Boto3 DynamoDB resource
 dynamodb_resource = boto3.resource(
     'dynamodb',
-    aws_access_key_id='fakeMyKeyId',
-    aws_secret_access_key='fakeSecretAccessKey',
+    #aws_access_key_id='fakeMyKeyId',
+    #aws_secret_access_key='fakeSecretAccessKey',
     endpoint_url='http://localhost:5300'
 )
 
 # Instantiate the Instructor class
 instructor_table_manager = Instructor(dynamodb_resource)
 
-
-if instructor_table_manager.table:
-    # The table exists, and you can perform operations on it
-    print("Table name:", instructor_table_manager.table.table_name)
-
 table_name = "instructor_table"  # Provide a suitable table name
-created_table = instructor_table_manager.create_table(table_name)
+instructor_table_manager.create_table(table_name)
 
 if instructor_table_manager.table:
     # The table exists, and you can perform operations on it
