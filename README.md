@@ -10,6 +10,20 @@ Run `sh ./bin/install.sh`.
 ### How to run
 - Run `sh run.sh` to start the services.
 
+### How to register a user
+- Run http post http://localhost:5000/api/register/ \
+    id=1 \
+    username="johnsmith" \
+    password="123" \
+    first_name="john" \
+    last_name="smith" \
+    roles:='["student"]'
+    
+### How to login
+- Run http post http://localhost:5000/api/login/ \
+    username="johnsmith" \
+    password="123" \
+
 ## Microservice Diagram
 <img src="https://raw.githubusercontent.com/NLTN/Assets/main/StudentEnrollment/APIGateway.svg" height="230">
 

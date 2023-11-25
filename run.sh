@@ -1,5 +1,12 @@
 #!/bin/sh
 
+# Check if redis is listening to port 6379
+REDIS_PORT_CHECK=$(netstat -nltp | grep 6379)
+
+if [ -n "$REDIS_PORT_CHECK" ]; then
+    # If Redis is running, stop the service
+    service redis-server stop
+fi
 
 # Create .env file
 sh ./bin/create-dotenv.sh
