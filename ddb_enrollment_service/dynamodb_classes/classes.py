@@ -46,20 +46,6 @@ class Class:
                     "ReadCapacityUnits": 5,
                     "WriteCapacityUnits": 5,
                 },
-                GlobalSecondaryIndexes=[
-                    {
-                        'IndexName': 'course_start_date_index',
-                        'KeySchema': [
-                            {'AttributeName': 'course_start_date', 'KeyType': 'RANGE'},
-                            {'AttributeName': 'enrollment_count', 'KeyType': 'RANGE'}
-                        ],
-                        'Projection': {'ProjectionType': 'INCLUDE', 'NonKeyAttributes': ['id']},
-                        'ProvisionedThroughput': {
-                            'ReadCapacityUnits': 5,
-                            'WriteCapacityUnits': 5
-                        }
-                    }
-                ]
             )
             self.table.wait_until_exists()
         except ClientError as err:
