@@ -46,6 +46,20 @@ class Class:
                     "ReadCapacityUnits": 5,
                     "WriteCapacityUnits": 5,
                 },
+                GlobalSecondaryIndexes=[
+                    {
+                        'IndexName': 'course_start_date_index',
+                        'KeySchema': [
+                            {'AttributeName': 'course_start_date', 'KeyType': 'RANGE'},
+                            {'AttributeName': 'enrollment_count', 'KeyType': 'RANGE'}
+                        ],
+                        'Projection': {'ProjectionType': 'INCLUDE', 'NonKeyAttributes': ['id']},
+                        'ProvisionedThroughput': {
+                            'ReadCapacityUnits': 5,
+                            'WriteCapacityUnits': 5
+                        }
+                    }
+                ]
             )
             self.table.wait_until_exists()
         except ClientError as err:
@@ -80,7 +94,7 @@ dynamodb_resource = boto3.resource(
 class_table_manager = Class(dynamodb_resource)
 
 
-table_name = "class_table"  # Provide a suitable table name
+table_name = "class_table"
 
 class_table_manager.create_table(table_name)
 
