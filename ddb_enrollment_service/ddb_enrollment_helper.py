@@ -27,18 +27,6 @@ class DynamoDBRedisHelper:
         else:
             return False
 
-    def get_available_classes_within_first_2weeks(self):
-        class_table = self.dynamodb_resource.Table("class_table")
-        two_weeks_ago = (datetime.now() - timedelta(days=14)).isoformat()
-
-        response = class_table.query(
-            IndexName='course_start_date_index',
-            KeyConditionExpression=Key('course_start_date').gte(two_weeks_ago) & Key('enrollment_count').lt('room_capacity'),
-            ProjectionExpression='id'
-        )
-
-        return [item["id"] for item in response.get("Items", [])]
-
     def enroll_students_from_waitlist(self, class_id_list):
         enrollment_count = 0
 
