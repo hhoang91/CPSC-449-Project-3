@@ -7,25 +7,18 @@ from ddb_enrollment_schema import *
 from boto3.dynamodb.conditions import Key
 from datetime import datetime
 import redis
-#from .ddb_enrollment_helper import enroll_students_from_waitlist, is_auto_enroll_enabled
 from .ddb_enrollment_helper import DynamoDBRedisHelper
 
-# Assuming you have DynamoDB resource and Redis connection instances available
-# Replace these with your actual instances
 dynamodb_resource = boto3.resource('dynamodb', region_name='local')
 redis_conn = redis.Redis(decode_responses=True)
 ddb_helper_instance = DynamoDBRedisHelper(dynamodb_resource, redis_conn)
 
-# Instantiate the Class class
 class_table_manager = Class(dynamodb_resource)
 
 WAITLIST_CAPACITY = 15
 MAX_NUMBER_OF_WAITLISTS_PER_STUDENT = 3
 
 student_router = APIRouter()
-
-# Create an instance of DynamoDBRedisHelper
-#ddb_helper_instance = DynamoDBRedisHelper()
 
 @student_router.get("/classes/available/")
 def get_available_classes(db: boto3.resource = Depends(get_db)):
