@@ -417,6 +417,6 @@ if __name__ == "__main__":
     create_table(Enrollment, "enrollment_table")
     create_table(Course, "course_table")
     create_table(Department, "department_table")
-    create_table(Droplist, "drolist_table")
+    create_table(Droplist, "droplist_table")
     create_table(Instructor, "instructor_table")
     create_table(Student, "student_table")
