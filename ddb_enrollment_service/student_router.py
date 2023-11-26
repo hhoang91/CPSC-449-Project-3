@@ -1,11 +1,20 @@
 from typing import Annotated
 import boto3
+import botocore
 from fastapi import Depends, HTTPException, Header, Body, status, APIRouter
 from .db_connection import get_db
 from ddb_enrollment_schema import *
 from boto3.dynamodb.conditions import Key
 from datetime import datetime
 import redis
+from .ddb_enrollment_helper import DynamoDBRedisHelper
+
+dynamodb_resource = boto3.resource('dynamodb', region_name='local')
+redis_conn = redis.Redis(decode_responses=True)
+ddb_helper_instance = DynamoDBRedisHelper(dynamodb_resource, redis_conn)
+
+class_table_manager = Class(dynamodb_resource)
+
 WAITLIST_CAPACITY = 15
 MAX_NUMBER_OF_WAITLISTS_PER_STUDENT = 3
 
@@ -88,6 +97,74 @@ def enroll(class_id: Annotated[int, Body(embed=True)],
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving classes: {str(e)}")
 
+
+@student_router.delete("/enrollment/{class_id}", status_code=status.HTTP_200_OK)
+def drop_class(
+    class_id: int,
+    student_id: int = Header(
+        alias="x-cwid", description="A unique ID for students, instructors, and registrars"),
+    db: boto3.resource = Depends(get_db)
+):
+    """
+    Handles a DELETE request to drop a student (himself/herself) from a specific class.
+
+    Parameters:
+    - class_id (int): The ID of the class from which the student wants to drop.
+    - student_id (int, in the header): A unique ID for students, instructors, and registrars.
+
+    Returns:
+    - dict: A dictionary with the detail message indicating the success of the operation.
+
+    Raises:
+    - HTTPException (404): If the specified enrollment record is not found.
+    - HTTPException (409): If a conflict occurs.
+    """
+    try:
+        enrollment_table_instance = create_table_instance(Enrollment, "enrollment_table")
+
+        # Check if the enrollment record exists
+        enrollment_response = enrollment_table_instance.query(
+            KeyConditionExpression=Key('class_id').eq(class_id) & Key('student_id').eq(str(student_id))
+        )
+        enrollment_items = enrollment_response.get('Items', [])
+
+        if not enrollment_items:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Record Not Found"
+            )
+
+        # Delete the enrollment record
+        enrollment_table_instance.delete_item(
+            Key={
+                'class_id': class_id,
+                'student_id': str(student_id)
+            }
+        )
+
+        # Insert into Droplist
+        droplist_table_instance = create_table_instance(Droplist, "drolist_table")
+        droplist_table_instance.put_item(
+            Item={
+                "class_id": class_id,
+                "student_id": str(student_id),
+                "drop_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "administrative": False
+            }
+        )
+
+        # Trigger auto enrollment using the instance
+        if ddb_helper_instance.is_auto_enroll_enabled(db):        
+            ddb_helper_instance.enroll_students_from_waitlist(db, [class_id])
+
+    except botocore.exceptions.ClientError as e:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail={"type": type(e).__name__, "msg": str(e)},
+        )
+
+    return {"detail": "Item deleted successfully"}
+
+
 @student_router.get("/waitlist/{class_id}/position/")
 def get_current_waitlist_position(
     class_id:int,
@@ -117,4 +194,22 @@ def get_current_waitlist_position(
 
     except redis.exceptions.RedisError as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving waitlist position: {str(e)}")
+    
+@student_router.delete("/waitlist/{class_id}/", status_code=status.HTTP_200_OK)
+def remove_from_waitlist(
+    class_id: int,
+    student_id: int = Header(
+        alias="x-cwid", description="A unique ID for students, instructors, and registrars"
+    )
+):
+    # Remove student from Redis waitlist
+    waitlist_key = f"waitlist_{class_id}"
+    member = f"{class_id}_{student_id}"
+
+    if not redis_conn.zrem(waitlist_key, member):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Record Not Found in Redis"
+        )
+
+    return {"detail": "Item deleted successfully"}
      

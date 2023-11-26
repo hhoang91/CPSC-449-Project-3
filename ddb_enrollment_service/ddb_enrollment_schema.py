@@ -65,6 +65,7 @@ class Configs:
         """
         self.dyn_resource = dyn_resource
         self.table = None
+        
 
     def create_table(self, table_name):
         """
@@ -74,6 +75,15 @@ class Configs:
         :return: The newly created table.
         """
         try:
+
+            # Check if the table already exists
+            existing_tables = [table.name for table in self.dyn_resource.tables.all()]
+            if table_name in existing_tables:
+                print(f"Table {table_name} already exists. Deleting the existing table.")
+                existing_table = self.dyn_resource.Table(table_name)
+                existing_table.delete()
+                existing_table.wait_until_not_exists()
+
             self.table = self.dyn_resource.create_table(
                 TableName=table_name,
                 KeySchema=[
@@ -117,6 +127,15 @@ class Course:
         :return: The newly created table.
         """
         try:
+            
+            # Check if the table already exists
+            existing_tables = [table.name for table in self.dyn_resource.tables.all()]
+            if table_name in existing_tables:
+                print(f"Table {table_name} already exists. Deleting the existing table.")
+                existing_table = self.dyn_resource.Table(table_name)
+                existing_table.delete()
+                existing_table.wait_until_not_exists()
+            
             self.table = self.dyn_resource.create_table(
                 TableName=table_name,
                 KeySchema=[
@@ -163,6 +182,16 @@ class Department:
         :return: The newly created table.
         """
         try:
+            
+            # Check if the table already exists
+            existing_tables = [table.name for table in self.dyn_resource.tables.all()]
+            if table_name in existing_tables:
+                print(f"Table {table_name} already exists. Deleting the existing table.")
+                existing_table = self.dyn_resource.Table(table_name)
+                existing_table.delete()
+                existing_table.wait_until_not_exists()
+            
+            
             self.table = self.dyn_resource.create_table(
                 TableName=table_name,
                 KeySchema=[
@@ -315,6 +344,15 @@ class Instructor:
         :return: The newly created table.
         """
         try:
+            
+            # Check if the table already exists
+            existing_tables = [table.name for table in self.dyn_resource.tables.all()]
+            if table_name in existing_tables:
+                print(f"Table {table_name} already exists. Deleting the existing table.")
+                existing_table = self.dyn_resource.Table(table_name)
+                existing_table.delete()
+                existing_table.wait_until_not_exists()
+            
             self.table = self.dyn_resource.create_table(
                 TableName=table_name,
                 KeySchema=[
@@ -361,6 +399,15 @@ class Student:
         :return: The newly created table.
         """
         try:
+            
+            # Check if the table already exists
+            existing_tables = [table.name for table in self.dyn_resource.tables.all()]
+            if table_name in existing_tables:
+                print(f"Table {table_name} already exists. Deleting the existing table.")
+                existing_table = self.dyn_resource.Table(table_name)
+                existing_table.delete()
+                existing_table.wait_until_not_exists()
+            
             self.table = self.dyn_resource.create_table(
                 TableName=table_name,
                 KeySchema=[
@@ -394,6 +441,7 @@ def create_table_instance(class_type, table_name):
         'dynamodb',
         #aws_access_key_id='fakeMyKeyId',
         #aws_secret_access_key='fakeSecretAccessKey',
+        region_name='local',
         endpoint_url='http://localhost:5300'
     )
     table_manager = class_type(dynamodb_resource)
@@ -405,6 +453,7 @@ def create_table(class_type, table_name):
         'dynamodb',
         #aws_access_key_id='fakeMyKeyId',
         #aws_secret_access_key='fakeSecretAccessKey',
+        region_name='local',
         endpoint_url='http://localhost:5300'
     )
     table_manager = class_type(dynamodb_resource)

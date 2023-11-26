@@ -46,6 +46,18 @@ class Configs:
             raise
         else:
             return self.table
+    
+    def insert_config_variable(self, variable_name, value):
+        try:
+            self.table.put_item(Item={"variable_name": variable_name, "value": value})
+        except ClientError as err:
+            logger.error(
+                "Couldn't insert data into table. Here's why: %s: %s",
+                err.response["Error"]["Code"],
+                err.response["Error"]["Message"],
+            )
+            raise
+
 
 # Create a Boto3 DynamoDB resource
 dynamodb_resource = boto3.resource(
@@ -64,3 +76,6 @@ configs_table_manager.create_table(table_name)
 if configs_table_manager.table:
     # The table exists, and you can perform operations on it
     print("Table name:", configs_table_manager.table.table_name)
+
+configs_table_manager.insert_config_variable("automatic_enrollment", "1")
+

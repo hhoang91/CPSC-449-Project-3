@@ -80,7 +80,7 @@ dynamodb_resource = boto3.resource(
 class_table_manager = Class(dynamodb_resource)
 
 
-table_name = "class_table"  # Provide a suitable table name
+table_name = "class_table"
 
 class_table_manager.create_table(table_name)
 
