@@ -2,6 +2,7 @@ import boto3
 import redis
 from datetime import datetime, timedelta
 from fastapi import HTTPException, status
+from boto3.dynamodb.conditions import Key
 
 # Create Boto3 DynamoDB resource
 dynamodb_resource = boto3.resource(
