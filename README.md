@@ -9,6 +9,8 @@ Run `sh ./bin/install.sh`.
 
 ### How to run
 - Run `sh run.sh` to start the services.
+- Run `sh create-enrollment-ddb.sh` to create the dynamo db tables.
+- Run `sh populate-enrollment-ddb.sh` to populate the dynamo db tables.
 
 ### How to register a user
 - Run http post http://localhost:5000/api/register/ \
